@@ -1,103 +1,158 @@
-// src/app/admin/reports/admin-reports.component.ts
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
-import { ApiService } from '../../core/services/api.service';
+import {
+  Component,
+  AfterViewInit,
+  ViewChild,
+  ElementRef
+} from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Chart, registerables } from 'chart.js';
+
+Chart.register(...registerables);
 
 @Component({
   selector: 'app-admin-reports',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './admin-reports.component.html'
 })
-export class AdminReportsComponent implements OnInit {
-  stats: any = null;
+export class AdminReportsComponent implements AfterViewInit {
+
+  @ViewChild('userPie') userPie!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('userBar') userBar!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('cropBar') cropBar!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('cropPie') cropPie!: ElementRef<HTMLCanvasElement>;
+
+  stats: any;
   crops: any[] = [];
-  chartDataLoaded = false;
 
-  userData: any[] = [];
-  cropChartData: any[] = [];
+  // ✅ STORE CHART INSTANCES
+  private charts: Chart[] = [];
 
-  constructor(
-    private router: Router,
-    private apiService: ApiService
-  ) {}
+  constructor(private http: HttpClient) {}
 
-  ngOnInit(): void {
+  ngAfterViewInit() {
     this.loadData();
   }
 
-  navigateTo(path: string): void {
-    this.router.navigate([path]);
+  loadData() {
+    this.http.get<any>('http://localhost:8080/api/admin/stats')
+      .subscribe(stats => {
+        this.stats = stats;
+
+        this.http.get<any[]>('http://localhost:8080/api/admin/crops')
+          .subscribe(crops => {
+            this.crops = crops;
+
+            // ✅ WAIT FOR DOM PAINT
+            setTimeout(() => this.renderCharts(), 0);
+          });
+      });
   }
 
-  async loadData(): Promise<void> {
-    try {
-      const [statsRes, cropsRes] = await Promise.all([
-        this.apiService.getStats().toPromise(),
-        this.apiService.getCrops().toPromise()
-      ]);
-
-      this.stats = statsRes || {};
-      this.crops = cropsRes || [];
-
-      this.prepareChartData();
-    } catch (err) {
-      console.error('Error loading reports:', err);
-    }
+  renderCharts() {
+    this.destroyCharts();
+    this.renderUserCharts();
+    this.renderCropCharts();
   }
 
-  prepareChartData(): void {
-    // User distribution data
-    if (this.stats) {
-      this.userData = [
-        { name: 'Farmers', value: this.stats.farmers || 0 },
-        { name: 'Distributors', value: this.stats.distributors || 0 },
-        { name: 'Consumers', value: this.stats.consumers || 0 },
-        { name: 'Admins', value: this.stats.admins || 0 }
-      ];
-    }
+  destroyCharts() {
+    this.charts.forEach(c => c.destroy());
+    this.charts = [];
+  }
 
-    // Crop distribution data
-    const cropCountMap: { [key: string]: number } = {};
-    this.crops.forEach((crop: any) => {
-      if (crop.cropName) {
-        cropCountMap[crop.cropName] = (cropCountMap[crop.cropName] || 0) + 1;
-      }
-    });
+  renderUserCharts() {
+    const userData = [
+      this.stats.farmers,
+      this.stats.distributors,
+      this.stats.consumers,
+      this.stats.admins
+    ];
 
-    this.cropChartData = Object.entries(cropCountMap).map(
-      ([name, count]) => ({ name, value: count, count })
+    this.charts.push(
+      new Chart(this.userPie.nativeElement, {
+        type: 'pie',
+        data: {
+          labels: ['Farmers', 'Distributors', 'Consumers', 'Admins'],
+          datasets: [{
+            data: userData,
+            backgroundColor: ['#6366f1', '#22c55e', '#a855f7', '#ef4444']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      })
     );
 
-    this.chartDataLoaded = true;
+    this.charts.push(
+      new Chart(this.userBar.nativeElement, {
+        type: 'bar',
+        data: {
+          labels: ['Farmers', 'Distributors', 'Consumers', 'Admins'],
+          datasets: [{
+            label: 'Users',
+            data: userData,
+            backgroundColor: '#6366f1'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      })
+    );
   }
 
-  logout(): void {
-    localStorage.removeItem('admin');
-    this.router.navigate(['/admin/login']);
-  }
+  renderCropCharts() {
+    const map: Record<string, number> = {};
 
-  getChartColors(index: number): string {
-    const COLORS = ["#6366f1", "#22c55e", "#a855f7", "#ef4444", "#f97316", "#14b8a6"];
-    return COLORS[index % COLORS.length];
-  }
+    this.crops.forEach(c => {
+      map[c.cropName] = (map[c.cropName] || 0) + 1;
+    });
 
-  formatNumber(num: number): string {
-    return num.toLocaleString();
-  }
+    const labels = Object.keys(map);
+    const values = Object.values(map);
 
-  // Helper method to get max value from array
-  getMaxValue(data: any[]): number {
-    if (data.length === 0) return 1;
-    const max = Math.max(...data.map(d => d.value || d.count || 0));
-    return max > 0 ? max : 1;
-  }
+    this.charts.push(
+      new Chart(this.cropBar.nativeElement, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Crops',
+            data: values,
+            backgroundColor: '#f97316'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      })
+    );
 
-  // Calculate bar height percentage
-  getBarHeight(itemValue: number, data: any[]): string {
-    const max = this.getMaxValue(data);
-    return ((itemValue / max) * 80) + '%';
+    this.charts.push(
+      new Chart(this.cropPie.nativeElement, {
+        type: 'pie',
+        data: {
+          labels,
+          datasets: [{
+            data: values,
+            backgroundColor: [
+              '#6366f1',
+              '#22c55e',
+              '#a855f7',
+              '#ef4444',
+              '#f97316',
+              '#14b8a6'
+            ]
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      })
+    );
   }
 }

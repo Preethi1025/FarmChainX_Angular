@@ -1,211 +1,141 @@
-<div class="min-h-screen bg-gray-100 p-6">
-  <div class="max-w-7xl mx-auto">
-    <!-- Header -->
-    <div class="bg-white rounded-lg shadow p-6 mb-6">
-      <div class="flex justify-between items-center">
-        <div>
-          <h1 class="text-3xl font-bold text-gray-800">Support Ticket Management</h1>
-          <p class="text-gray-600 mt-1">Manage user support tickets</p>
+<h1 class="text-3xl font-bold mb-6">🎧 Support Ticket Management</h1>
+
+<!-- ================= STATS ================= -->
+<div *ngIf="stats" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+  <div class="bg-blue-50 p-4 rounded-xl shadow">
+    <div class="text-2xl font-bold">{{ stats.totalTickets || 0 }}</div>
+    <div class="text-sm text-blue-600">Total Tickets</div>
+  </div>
+
+  <div class="bg-red-50 p-4 rounded-xl shadow">
+    <div class="text-2xl font-bold">{{ stats.openTickets || 0 }}</div>
+    <div class="text-sm text-red-600">Open</div>
+  </div>
+
+  <div class="bg-yellow-50 p-4 rounded-xl shadow">
+    <div class="text-2xl font-bold">{{ stats.inProgressTickets || 0 }}</div>
+    <div class="text-sm text-yellow-600">In Progress</div>
+  </div>
+
+  <div class="bg-green-50 p-4 rounded-xl shadow">
+    <div class="text-2xl font-bold">{{ stats.resolvedTickets || 0 }}</div>
+    <div class="text-sm text-green-600">Resolved</div>
+  </div>
+</div>
+
+<!-- ================= MAIN ================= -->
+<div class="flex flex-col lg:flex-row gap-6">
+
+  <!-- ================= LEFT ================= -->
+  <div class="lg:w-1/3">
+    <div class="bg-white rounded-xl shadow flex flex-col h-[650px]">
+
+      <!-- Tabs -->
+      <div class="flex gap-2 p-4 border-b bg-gray-50 overflow-x-auto">
+        <button
+          *ngFor="let t of tabs"
+          (click)="setTab(t)"
+          class="px-4 py-1.5 rounded-full text-sm font-medium border whitespace-nowrap"
+          [ngClass]="{
+            'bg-blue-600 text-white border-blue-600': activeTab === t,
+            'bg-white text-gray-700 hover:bg-gray-100 border-gray-200': activeTab !== t
+          }">
+          {{ t }}
+        </button>
+      </div>
+
+      <!-- Ticket List -->
+      <div class="flex-1 overflow-y-auto">
+        <div
+          *ngFor="let t of filteredTickets"
+          (click)="selectTicket(t)"
+          class="p-4 border-b cursor-pointer hover:bg-gray-50"
+          [class.bg-blue-50]="selectedTicket?.id === t.id">
+
+          <h3 class="font-semibold truncate">{{ t.subject }}</h3>
+          <p class="text-sm text-gray-600 truncate">{{ t.description }}</p>
+
+          <div class="text-xs text-gray-500 mt-1">
+            #{{ t.ticketId }} • {{ t.status }}
+          </div>
         </div>
-        <div class="flex gap-3">
-          <button
-            (click)="navigateTo('/admin/dashboard')"
-            class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-          >
-            ← Back to Dashboard
-          </button>
-          <button
-            (click)="loadTickets()"
-            [disabled]="loading"
-            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-          >
-            🔄 Refresh
-          </button>
+
+        <!-- Empty -->
+        <div
+          *ngIf="filteredTickets.length === 0"
+          class="h-full flex flex-col items-center justify-center text-gray-400">
+          <div class="text-4xl mb-3">📭</div>
+          <p class="text-sm font-medium">No tickets found</p>
         </div>
       </div>
-      
-      <!-- Stats -->
-      <div *ngIf="stats" class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
-        <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
-          <div class="text-2xl font-bold text-blue-700">{{stats.totalTickets || 0}}</div>
-          <div class="text-blue-600 text-sm">Total Tickets</div>
-        </div>
-        <div class="bg-red-50 p-4 rounded-lg border border-red-100">
-          <div class="text-2xl font-bold text-red-700">{{stats.openTickets || 0}}</div>
-          <div class="text-red-600 text-sm">Open</div>
-        </div>
-        <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-100">
-          <div class="text-2xl font-bold text-yellow-700">{{stats.inProgressTickets || 0}}</div>
-          <div class="text-yellow-600 text-sm">In Progress</div>
-        </div>
-        <div class="bg-green-50 p-4 rounded-lg border border-green-100">
-          <div class="text-2xl font-bold text-green-700">{{stats.resolvedTickets || 0}}</div>
-          <div class="text-green-600 text-sm">Resolved</div>
+
+    </div>
+  </div>
+
+  <!-- ================= RIGHT ================= -->
+  <div class="lg:w-2/3">
+
+    <div *ngIf="selectedTicket; else emptyState"
+         class="bg-white rounded-xl shadow h-[650px] flex flex-col">
+
+      <!-- Header -->
+      <div class="p-6 border-b">
+        <h2 class="text-xl font-bold">{{ selectedTicket.subject }}</h2>
+
+        <select
+          #statusSelect
+          class="mt-3 border rounded-lg px-3 py-1"
+          [value]="selectedTicket.status"
+          (change)="updateStatus(statusSelect.value)">
+          <option value="OPEN">Open</option>
+          <option value="IN_PROGRESS">In Progress</option>
+          <option value="RESOLVED">Resolved</option>
+          <option value="CLOSED">Closed</option>
+        </select>
+      </div>
+
+      <!-- Messages -->
+      <div class="flex-1 p-6 space-y-4 overflow-y-auto bg-gray-50">
+        <div
+          *ngFor="let m of selectedTicket.messages"
+          class="p-4 rounded-lg max-w-[80%]"
+          [class.ml-auto]="m.senderRole === 'ADMIN'"
+          [class.bg-blue-100]="m.senderRole === 'ADMIN'"
+          [class.bg-white]="m.senderRole !== 'ADMIN'">
+
+          <div class="text-xs font-semibold mb-1">
+            {{ m.senderRole }} • {{ formatDate(m.createdAt) }}
+          </div>
+
+          <p class="text-sm">{{ m.message }}</p>
         </div>
       </div>
+
+      <!-- Reply -->
+      <div class="p-6 border-t">
+        <textarea
+          [(ngModel)]="message"
+          rows="3"
+          class="w-full border rounded-lg p-3 mb-3"
+          placeholder="Type response..."></textarea>
+
+        <button
+          (click)="sendMessage()"
+          class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+          Send Response
+        </button>
+      </div>
+
     </div>
 
-    <!-- Loading State -->
-    <div *ngIf="loading && tickets.length === 0" class="text-center py-10">
-      <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-      <p class="text-gray-600">Loading support tickets...</p>
-    </div>
-
-    <!-- Main Content -->
-    <div *ngIf="!loading || tickets.length > 0" class="flex flex-col lg:flex-row gap-6">
-      <!-- Tickets List -->
-      <div class="lg:w-1/3">
-        <div class="bg-white rounded-lg shadow">
-          <div class="p-4 border-b">
-            <div class="flex space-x-2 mb-4">
-              <button
-                *ngFor="let tab of ['all', 'open', 'in_progress', 'resolved']"
-                (click)="activeTab = tab"
-                [class]="'px-3 py-1 rounded text-sm ' + (activeTab === tab ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700')"
-              >
-                {{tab.charAt(0).toUpperCase() + tab.slice(1)}}
-              </button>
-            </div>
-            <div class="text-sm text-gray-600 mb-2">
-              Showing {{getFilteredTickets().length}} tickets
-            </div>
-          </div>
-          
-          <div class="max-h-[600px] overflow-y-auto">
-            <div *ngIf="getFilteredTickets().length > 0; else noTickets">
-              <div
-                *ngFor="let ticket of getFilteredTickets()"
-                (click)="handleTicketClick(ticket)"
-                [class]="'p-4 border-b cursor-pointer hover:bg-gray-50 ' + (selectedTicket?.id === ticket.id ? 'bg-blue-50 border-l-4 border-blue-500' : '')"
-              >
-                <div class="flex justify-between items-start mb-2">
-                  <h3 class="font-semibold text-gray-800 truncate">{{ticket.subject}}</h3>
-                  <div class="flex gap-2">
-                    <span [class]="'px-3 py-1 rounded-full text-xs font-medium ' + getStatusBadge(ticket.status)">
-                      {{ticket.status}}
-                    </span>
-                  </div>
-                </div>
-                <div class="text-sm text-gray-600 mb-2">
-                  #{{ticket.ticketId}} • {{ticket.reportedByRole}}
-                </div>
-                <p class="text-sm text-gray-700 line-clamp-2 mb-2">
-                  {{ticket.description || 'No description'}}
-                </p>
-                <div class="flex justify-between text-xs text-gray-500">
-                  <span>{{formatDate(ticket.createdAt)}}</span>
-                  <span>{{ticket.issueType || 'General'}}</span>
-                </div>
-              </div>
-            </div>
-            <ng-template #noTickets>
-              <div class="p-8 text-center text-gray-500">
-                No tickets found
-              </div>
-            </ng-template>
-          </div>
+    <ng-template #emptyState>
+      <div class="bg-white rounded-xl shadow h-[650px] flex items-center justify-center text-gray-400">
+        <div class="text-center">
+          <div class="text-4xl mb-3">📋</div>
+          <p>Select a ticket to view details</p>
         </div>
       </div>
+    </ng-template>
 
-      <!-- Ticket Details -->
-      <div class="lg:w-2/3">
-        <div *ngIf="selectedTicket; else noTicketSelected">
-          <div class="bg-white rounded-lg shadow">
-            <div class="p-6 border-b">
-              <div class="flex justify-between items-start">
-                <div>
-                  <h2 class="text-xl font-bold text-gray-800">{{selectedTicket.subject}}</h2>
-                  <div class="mt-2 space-y-1 text-sm text-gray-600">
-                    <div>Ticket ID: <span class="font-medium">#{{selectedTicket.ticketId}}</span></div>
-                    <div>Reported by: <span class="font-medium">{{selectedTicket.reportedByRole}} (ID: {{selectedTicket.reportedById}})</span></div>
-                    <div>Status: 
-                      <span [class]="'px-3 py-1 rounded-full text-xs font-medium ' + getStatusBadge(selectedTicket.status)">
-                        {{selectedTicket.status}}
-                      </span> 
-                      • Priority: 
-                      <span [class]="'px-3 py-1 rounded-full text-xs font-medium ' + getPriorityBadge(selectedTicket.priority)">
-                        {{selectedTicket.priority}}
-                      </span>
-                    </div>
-                    <div>Created: {{formatDate(selectedTicket.createdAt)}}</div>
-                  </div>
-                </div>
-                <div class="flex gap-2">
-                  <select
-                    [value]="selectedTicket.status"
-                    (change)="onStatusChange($event)"
-                    class="border rounded px-3 py-1 text-sm"
-                  >
-                    <option value="OPEN">Open</option>
-                    <option value="IN_PROGRESS">In Progress</option>
-                    <option value="RESOLVED">Resolved</option>
-                    <option value="CLOSED">Closed</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            <div class="p-6 border-b">
-              <h3 class="font-semibold text-gray-800 mb-3">Issue Description</h3>
-              <div class="bg-gray-50 p-4 rounded">
-                <p class="text-gray-700 whitespace-pre-wrap">{{selectedTicket.description || 'No description provided'}}</p>
-              </div>
-            </div>
-
-            <div class="p-6">
-              <h3 class="font-semibold text-gray-800 mb-4">Conversation</h3>
-              
-              <div class="mb-6 space-y-4 max-h-[300px] overflow-y-auto p-2">
-                <div *ngIf="selectedTicket.messages && selectedTicket.messages.length > 0; else noMessages">
-                  <div
-                    *ngFor="let msg of selectedTicket.messages; let i = index"
-                    [class]="'p-4 rounded-lg ' + (msg.senderRole === 'ADMIN' ? 'bg-blue-50 border border-blue-100 ml-8' : 'bg-gray-50 border border-gray-100 mr-8')"
-                  >
-                    <div class="flex justify-between mb-2">
-                      <span class="font-medium text-sm">
-                        {{msg.senderRole}} <span *ngIf="msg.isAdminResponse">(Admin)</span>
-                      </span>
-                      <span class="text-xs text-gray-500">{{formatDate(msg.createdAt)}}</span>
-                    </div>
-                    <p class="text-gray-700">{{msg.message}}</p>
-                  </div>
-                </div>
-                <ng-template #noMessages>
-                  <div class="text-center text-gray-500 py-8">
-                    No messages yet. Start the conversation!
-                  </div>
-                </ng-template>
-              </div>
-
-              <div class="border-t pt-4">
-                <textarea
-                  [(ngModel)]="message"
-                  placeholder="Type your response here..."
-                  rows="3"
-                  class="w-full border rounded-lg p-3 mb-3"
-                  [disabled]="loading"
-                ></textarea>
-                <div class="flex justify-end">
-                  <button
-                    (click)="handleSendMessage()"
-                    [disabled]="loading || !message.trim()"
-                    class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {{loading ? 'Sending...' : 'Send Response'}}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <ng-template #noTicketSelected>
-          <div class="bg-white rounded-lg shadow p-8 text-center">
-            <div class="text-gray-400 mb-4">📋</div>
-            <h3 class="text-lg font-medium text-gray-700 mb-2">No ticket selected</h3>
-            <p class="text-gray-500">Select a ticket from the list to view details and respond</p>
-          </div>
-        </ng-template>
-      </div>
-    </div>
   </div>
 </div>

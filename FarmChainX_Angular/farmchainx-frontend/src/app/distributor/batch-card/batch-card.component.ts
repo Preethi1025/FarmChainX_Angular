@@ -1,41 +1,54 @@
-import { CommonModule } from '@angular/common';
 import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { CommonModule } from '@angular/common'; // ✅ Import CommonModule
+
+export interface Batch {
+  batchId: string;
+  cropType?: string;
+  cropImageUrl?: string;
+  status?: string;
+  totalQuantity?: number;
+  price?: number;
+  listingQuantity?: number;
+  farmerName?: string;
+  farmerId?: string;
+  location?: string;
+  avgQualityScore?: number;
+  certification?: string;
+}
 
 @Component({
   selector: 'app-batch-card',
-  standalone: true,
-  imports: [CommonModule],
-  templateUrl: './batch-card.component.html'
+  standalone: true, // important if using standalone component
+  imports: [CommonModule], // ✅ Add CommonModule here
+  templateUrl: './batch-card.component.html',
 })
 export class BatchCardComponent {
+  @Input() batch!: Batch;
+  @Input() readOnly: boolean = false;
 
-  @Input() batch: any;
-  @Input() readOnly = false;
-@Output() approve = new EventEmitter<string>();
-@Output() reject = new EventEmitter<string>();
-@Output() trace = new EventEmitter<string>();
-
-
+  @Output() approve = new EventEmitter<string>();
+  @Output() reject = new EventEmitter<string>();
+  @Output() trace = new EventEmitter<string>();
 
   get imageUrl(): string {
-    if (!this.batch?.cropImageUrl) return '/placeholder.png';
-    return `http://localhost:8080${encodeURI(this.batch.cropImageUrl)}`;
+    return this.batch?.cropImageUrl
+      ? `http://localhost:8080${encodeURI(this.batch.cropImageUrl)}`
+      : '/assets/placeholder.png';
   }
-
-  get isInvalid(): boolean {
-    return (
-      !this.batch ||
-      this.batch.status === 'DELETED' ||
-      this.batch.status === 'EMPTY'
-    );
-  }
-
-
-onApprove() { this.approve.emit(this.batch.batchId); }
-onReject() { this.reject.emit(this.batch.batchId); }
-onTrace() { this.trace.emit(this.batch.batchId); }
 
   onImageError(event: Event) {
-    (event.target as HTMLImageElement).src = '/placeholder.png';
+    (event.target as HTMLImageElement).src = '/assets/placeholder.png';
+  }
+
+  emitApprove() {
+    this.approve.emit(this.batch.batchId);
+  }
+
+  emitReject() {
+    this.reject.emit(this.batch.batchId);
+  }
+
+  emitTrace() {
+    this.trace.emit(this.batch.batchId);
   }
 }

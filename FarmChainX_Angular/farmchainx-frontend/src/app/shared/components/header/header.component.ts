@@ -25,7 +25,6 @@ export class HeaderComponent implements OnInit {
 
   navigation = [
     { name: 'Marketplace', href: '/marketplace' },
-    { name: 'Traceability', href: '/trace/preview' }
   ];
 
   constructor(

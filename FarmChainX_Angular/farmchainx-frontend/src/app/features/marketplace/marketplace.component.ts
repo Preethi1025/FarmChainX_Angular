@@ -1,18 +1,26 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
+import { TracePreviewComponent } from '../../farmer/components/trace-preview/trace-preview.component';
 
 @Component({
   selector: 'app-marketplace',
   standalone: true,
-  imports: [CommonModule, FormsModule],
-  templateUrl: './marketplace.component.html',
+  imports: [CommonModule, FormsModule, TracePreviewComponent],
+  templateUrl: './marketplace.component.html'
 })
 export class MarketplaceComponent implements OnInit {
 
   products: any[] = [];
   loading = true;
+
+  // TRACE STATE
+  showTrace = false;
+  activeBatchId: string | null = null;
+
+  // 🔥 KEY TO FORCE RE-CREATE
+  traceRenderKey = 0;
 
   // filters
   search = '';
@@ -20,18 +28,14 @@ export class MarketplaceComponent implements OnInit {
   maxPrice: number | null = null;
   sortBy = '';
 
-  selectedProduct: any = null;
-
-  constructor(
-    private http: HttpClient,
-    private cdr: ChangeDetectorRef   // ✅ ADD THIS
-  ) {}
+  constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
     this.fetchProducts();
   }
 
   /* ---------------- FETCH PRODUCTS ---------------- */
+
   fetchProducts(): void {
     this.loading = true;
 
@@ -44,28 +48,54 @@ export class MarketplaceComponent implements OnInit {
               listingId: p.listingId,
               cropName: p.cropName,
               farmerId: p.farmerId,
-              batchId: p.batchId,
+              batchId: p.batchId || p.batch_id || p.batch?.batchId,
               price: Number(p.price),
               quantity: Number(p.quantity),
               qualityGrade: p.qualityGrade || 'Not Graded',
-              traceUrl: p.traceUrl,
               cropImageUrl: p.cropImageUrl
             }));
 
-          // ✅ FORCE UI UPDATE
           this.loading = false;
-          this.cdr.detectChanges();
         },
-        error: (err) => {
-          console.error('Marketplace fetch failed', err);
+        error: () => {
           this.products = [];
           this.loading = false;
-          this.cdr.detectChanges();
         }
       });
   }
 
-  /* ---------------- IMAGE HANDLING ---------------- */
+  /* ---------------- TRACE ---------------- */
+
+  openTrace(batchId?: string) {
+    if (!batchId) return;
+
+    this.showTrace = true;
+    this.activeBatchId = batchId;
+
+    // 🔥 FORCE SECOND LOAD AFTER MODAL OPENS
+    setTimeout(() => {
+      this.traceRenderKey++;
+    });
+  }
+
+  closeTrace() {
+    this.showTrace = false;
+    this.activeBatchId = null;
+  }
+
+  /* ---------------- BUY ---------------- */
+
+  buyNow(product: any) {
+    const role = localStorage.getItem('userRole');
+    if (role !== 'BUYER') {
+      alert('Please login as a buyer');
+      return;
+    }
+    console.log('Buying product:', product);
+  }
+
+  /* ---------------- IMAGE ---------------- */
+
   getImageUrl(path: string | null): string {
     if (!path) return '/placeholder.png';
     if (path.startsWith('http')) return path;
@@ -76,22 +106,8 @@ export class MarketplaceComponent implements OnInit {
     (event.target as HTMLImageElement).src = '/placeholder.png';
   }
 
-  /* ---------------- TRACE ---------------- */
-  openTrace(url: string) {
-    window.open(url, '_blank');
-  }
-
-  /* ---------------- BUY NOW ---------------- */
-  buyNow(product: any) {
-    const role = localStorage.getItem('userRole');
-    if (role !== 'BUYER') {
-      alert('Please login as a buyer');
-      return;
-    }
-    this.selectedProduct = product;
-  }
-
   /* ---------------- FILTER + SORT ---------------- */
+
   get filteredProducts(): any[] {
     return this.products
       .filter(p =>
@@ -107,4 +123,9 @@ export class MarketplaceComponent implements OnInit {
         return 0;
       });
   }
+
+  reloadTrace() {
+  this.traceRenderKey = this.traceRenderKey + 1;
+}
+
 }

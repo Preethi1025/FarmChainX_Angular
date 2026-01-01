@@ -11,10 +11,10 @@ export class ApiService {
 
   constructor(private http: HttpClient) {}
 
-  // Stats
-  getStats(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/stats`);
-  }
+  getAdminStats() {
+  return this.http.get('http://localhost:8080/api/admin/stats');
+}
+
 
   // Users
   getFarmers(): Observable<any> {

@@ -1,8 +1,6 @@
 <div class="p-6">
 
- <div class="p-6">
-
-  <!-- Stats Overview -->
+  <!-- ================= STATS ================= -->
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
     <div class="bg-white rounded-lg shadow p-4">
       <h3 class="text-sm font-medium text-gray-500">Total Products</h3>
@@ -20,7 +18,7 @@
     </div>
   </div>
 
-  <!-- Action Buttons -->
+  <!-- ================= ACTION BUTTONS ================= -->
   <div class="flex gap-3 mb-6 flex-wrap">
     <button
       (click)="showAddCropModal = true"
@@ -41,85 +39,61 @@
     </button>
   </div>
 
-  <!-- Crops Table -->
-  <div class="bg-white rounded-lg shadow overflow-hidden">
-    <div class="px-6 py-4 border-b border-gray-200">
-      <h2 class="text-lg font-semibold text-gray-900">Your Crops</h2>
-    </div>
+  <!-- ================= CROPS GRID ================= -->
+  <div *ngIf="!loading && crops.length > 0"
+       class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 
-    @if (loading) {
-      <div class="p-8 text-center">
-        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <p class="mt-2 text-gray-600">Loading crops...</p>
-      </div>
-    }
-    @else if (crops.length === 0) {
-      <div class="p-8 text-center">
-        <p class="text-gray-500">No crops added yet.</p>
-        <button
-          (click)="showAddCropModal = true"
-          class="mt-2 text-blue-600 hover:text-blue-800">
-          Add your first crop →
-        </button>
-      </div>
-    }
-    @else {
-      <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Crop</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-            </tr>
-          </thead>
+    @for (crop of crops; track trackByCropId($index, crop)) {
 
-          <tbody class="bg-white divide-y divide-gray-200">
-            @for (crop of crops; track trackByCropId($index, crop)) {
-              <tr>
-                <td class="px-6 py-4">
-                  <div class="text-sm font-medium text-gray-900">{{ crop.cropName }}</div>
-                  <div class="text-sm text-gray-500">{{ crop.cropType }}</div>
-                </td>
+      <div class="p-5 rounded-2xl shadow-lg bg-white border border-gray-200 hover:shadow-xl transition overflow-hidden">
 
-                <td class="px-6 py-4">
-                  {{ crop.quantity }} {{ crop.unit }}
-                </td>
+        <!-- IMAGE -->
+        <div class="relative mb-3 rounded-xl overflow-hidden h-40">
+          <img
+            [src]="getImageUrl(crop)"
+            [alt]="crop.cropName"
+            class="w-full h-full object-cover hover:scale-105 transition duration-500"
+            (error)="onImageError($event)" />
 
-                <td class="px-6 py-4">
-                  @if (crop.listed) {
-                    <span class="px-2 inline-flex text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                      Listed
-                    </span>
-                  } @else {
-                    <span class="px-2 inline-flex text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
-                      Not Listed
-                    </span>
-                  }
-                </td>
+          <span class="absolute top-3 right-3 bg-blue-100 text-blue-700 text-xs px-3 py-1 rounded-full shadow">
+            {{ crop.status || 'PLANTED' }}
+          </span>
 
-                <td class="px-6 py-4 text-sm font-medium">
-                  @if (!crop.listed) {
-                    <button
-                      (click)="openListing(crop)"
-                      class="text-blue-600 hover:text-blue-900 mr-3">
-                      List
-                    </button>
-                  }
-                  <button class="text-gray-600 hover:text-gray-900">
-                    View
-                  </button>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
+          <div class="absolute bottom-3 left-3 bg-black/50 text-white px-3 py-1 rounded-lg text-sm">
+            🌱 {{ crop.cropType }}
+          </div>
+        </div>
+
+        <!-- INFO -->
+        <div class="space-y-2 text-sm text-gray-700">
+          <p><strong>{{ crop.cropName }}</strong></p>
+          <p>📦 Quantity: <strong>{{ crop.quantity }} kg</strong></p>
+          <p>💰 Price: <strong>₹{{ crop.price }} / kg</strong></p>
+          <p>📍 Location: <strong>{{ crop.location }}</strong></p>
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="mt-4 flex gap-3 flex-wrap">
+          <button
+            *ngIf="!crop.listed"
+            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+            (click)="openListing(crop)">
+            List
+          </button>
+
+          <!-- ✅ TRACE BUTTON (CORRECT PLACE) -->
+          <button
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            (click)="openTrace(crop.batchId)">
+            Trace
+          </button>
+        </div>
+
       </div>
     }
   </div>
 
-  <!-- Modals -->
+  <!-- ================= OTHER MODALS ================= -->
   @if (showListingModal) {
     <app-listing-modal
       [crop]="selectedCrop"
@@ -129,16 +103,71 @@
 
   @if (showAddCropModal) {
     <app-add-crop-modal
+      [farmerId]="auth.user.id"
       (close)="showAddCropModal = false"
-      (success)="onCropAdded()" />
+      (cropAdded)="onCropAdded()" />
   }
 
   @if (showBatchManagement) {
-  <app-batch-management
-    [user]="auth.user"
-    (close)="showBatchManagement = false">
-  </app-batch-management>
-}
+    <app-batch-management
+      [user]="auth.user"
+      (close)="showBatchManagement = false">
+    </app-batch-management>
+  }
 
+</div>
 
+<!-- ================= TRACE MODAL (ONLY ONCE) ================= -->
+<div
+  *ngIf="showTrace"
+  class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50"
+>
+  <div class="bg-white rounded-xl p-6 w-full max-w-md relative">
+
+    <!-- CLOSE -->
+    <button
+      class="absolute top-2 right-3 text-gray-500 hover:text-gray-700"
+      (click)="closeTrace()">
+      ✕
+    </button>
+
+    <!-- HEADER -->
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="text-lg font-semibold">
+        Traceability
+      </h3>
+
+      <!-- REFRESH -->
+      <button
+        type="button"
+        title="Reload trace"
+        (click)="reloadTrace()"
+        class="flex items-center justify-center
+               w-8 h-8 rounded-full
+               border border-gray-300
+               text-gray-600
+               hover:bg-gray-100
+               hover:text-gray-800
+               transition">
+        <svg xmlns="http://www.w3.org/2000/svg"
+             class="w-4 h-4"
+             fill="none"
+             viewBox="0 0 24 24"
+             stroke="currentColor"
+             stroke-width="2">
+          <path stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M4 4v6h6M20 20v-6h-6M5 19a9 9 0 0014-5M19 5a9 9 0 00-14 5"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- TRACE PREVIEW -->
+    <app-trace-preview
+      *ngIf="activeBatchId"
+      [batchId]="activeBatchId"
+      [attr.data-key]="traceRenderKey">
+    </app-trace-preview>
+
+  </div>
 </div>

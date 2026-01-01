@@ -1,13 +1,12 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from './core/guards/auth.guard';
 
-import { AdminDashboardComponent } from './admin/dashboard/admin-dashboard.component';
-import { AdminSupportComponent } from './admin/support/admin-support.component';
-import { AdminReportsComponent } from './admin/reports/admin-reports.component';
+/* =======================
+   APP ROUTES
+======================= */
+
 export const routes: Routes = [
-{ path: 'admin/dashboard', component: AdminDashboardComponent },
-  { path: 'admin/support', component: AdminSupportComponent },
-  { path: 'admin/reports', component: AdminReportsComponent },
+
   /* =======================
      PUBLIC ROUTES
   ======================= */
@@ -40,12 +39,6 @@ export const routes: Routes = [
         .then(m => m.MarketplaceComponent)
   },
 
-  {
-    path: 'trace/:batchId',
-    loadComponent: () =>
-      import('./features/traceability/traceability.component')
-        .then(m => m.TraceabilityComponent)
-  },
 
   /* =======================
      SUPPORT & LEGAL
@@ -135,7 +128,7 @@ export const routes: Routes = [
   },
 
   /* =======================
-     DISTRIBUTOR ✅ FIXED
+     DISTRIBUTOR
   ======================= */
 
   {
@@ -157,7 +150,7 @@ export const routes: Routes = [
   },
 
   /* =======================
-     ADMIN
+     ADMIN (✅ FIXED)
   ======================= */
 
   {

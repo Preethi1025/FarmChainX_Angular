@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+// src/app/admin/crops/admin-crops.component.ts
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -9,20 +10,25 @@ import { HttpClient } from '@angular/common/http';
   imports: [CommonModule, RouterModule],
   templateUrl: './admin-crops.component.html'
 })
-export class AdminCropsComponent {
+export class AdminCropsComponent implements OnInit {
 
   crops: any[] = [];
-  loading = true; // ✅ REQUIRED
+  loading = true;
 
-  constructor(private http: HttpClient) {
+  /* FILTER STATE */
+  search = '';
+  statusFilter: 'ALL' | 'PLANTED' | 'HARVESTED' | 'SOLD' = 'ALL';
+
+  constructor(private http: HttpClient) {}
+
+  ngOnInit(): void {
     this.loadCrops();
   }
 
   loadCrops(): void {
     this.loading = true;
 
-    this.http
-      .get<any[]>('http://localhost:8080/api/admin/crops')
+    this.http.get<any[]>('http://localhost:8080/api/admin/crops')
       .subscribe({
         next: (res) => {
           this.crops = res || [];
@@ -32,9 +38,24 @@ export class AdminCropsComponent {
           this.crops = [];
         },
         complete: () => {
-          this.loading = false; // ✅ IMPORTANT
+          this.loading = false;
         }
       });
+  }
+
+  /* ---------- FILTERED CROPS ---------- */
+  get filteredCrops(): any[] {
+    return this.crops
+      .filter(c =>
+        !this.search ||
+        JSON.stringify(c)
+          .toLowerCase()
+          .includes(this.search.toLowerCase())
+      )
+      .filter(c =>
+        this.statusFilter === 'ALL' ||
+        c.status === this.statusFilter
+      );
   }
 
   deleteCrop(id: number): void {

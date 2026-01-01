@@ -2,6 +2,8 @@ package com.FarmChainX.backend.Controller;
 
 import com.FarmChainX.backend.Model.Crop;
 import com.FarmChainX.backend.Service.CropService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -118,23 +120,32 @@ public class CropController {
         }
 
     }
-    @PostMapping("/add-with-image")
-    public ResponseEntity<?> addCropWithImage(
-            @RequestPart("crop") Crop crop,
-            @RequestPart("image") MultipartFile image) {
-        try {
+ @PostMapping(value = "/add-with-image", consumes = "multipart/form-data")
+public ResponseEntity<?> addCropWithImage(
+        @RequestPart("crop") String cropJson,
+        @RequestPart(value = "image", required = false) MultipartFile image
+) {
+    try {
+        ObjectMapper mapper = new ObjectMapper();
+        Crop crop = mapper.readValue(cropJson, Crop.class);
+
+        if (crop.getFarmerId() == null || crop.getFarmerId().isBlank()) {
+            throw new IllegalArgumentException("farmerId is required");
+        }
+
+        if (image != null && !image.isEmpty()) {
             String imageUrl = cropService.saveCropImage(image);
             crop.setCropImageUrl(imageUrl);
-            crop.setQualityCheckStatus("PENDING");
-            return ResponseEntity.ok(cropService.addCrop(crop));
-        } catch (IllegalArgumentException e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
-        } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", "Failed to add crop with image: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
+
+        crop.setQualityCheckStatus("PENDING");
+
+        return ResponseEntity.ok(cropService.addCrop(crop));
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("error", e.getMessage()));
     }
+}
 }

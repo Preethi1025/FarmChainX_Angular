@@ -56,25 +56,25 @@ public class SupportService {
         
         return savedTicket;
     }
-    
-    private void createAdminNotification(SupportTicket ticket) {
-    Notification notification = new Notification();
-    notification.setUserId("1"); // Admin ID
-    notification.setUserRole("ADMIN");
-    notification.setTitle("New Support Ticket Created");
-    notification.setMessage(String.format(
-        "User %s (ID: %s) has created a new ticket: %s",
-        ticket.getReportedByRole(),
-        ticket.getReportedById(),
-        ticket.getSubject()
-    ));
-    notification.setNotificationType("TICKET_CREATED");
-    notification.setRelatedTicketId(ticket.getTicketId());
-    notification.setTicketId(ticket.getId());  // Set the actual ticket ID
-    
-    notificationRepository.save(notification);
+
+private void createAdminNotification(SupportTicket ticket) {
+
+    userRepository.findByRole("ADMIN").forEach(admin -> {
+        Notification n = new Notification();
+        n.setUserId(admin.getId());
+        n.setUserRole("ADMIN");
+        n.setTitle("New Support Ticket");
+        n.setMessage(
+            "Ticket from " + ticket.getReportedByRole() +
+            " (ID: " + ticket.getReportedById() + ")"
+        );
+        n.setNotificationType("TICKET_CREATED");
+        n.setRelatedTicketId(ticket.getTicketId());
+        n.setTicketId(ticket.getId());
+        notificationRepository.save(n);
+    });
 }
-    
+
     public List<SupportTicket> getUserTickets(String userId) {
         return ticketRepository.findByReportedById(userId);
     }
@@ -171,29 +171,28 @@ public class SupportService {
     }
     
     // ========== NOTIFICATION METHODS ==========
-    
-private void createUserNotification(String userId, String userRole, 
-                                   String title, String message, String relatedTicketId) {
-    Notification notification = new Notification();
-    notification.setUserId(userId);
-    notification.setUserRole(userRole);
-    notification.setTitle(title);
-    notification.setMessage(message);
-    notification.setNotificationType("TICKET_UPDATE");
-    notification.setRelatedTicketId(relatedTicketId);
-        try {
-        SupportTicket ticket = ticketRepository.findByTicketId(relatedTicketId);
-        if (ticket != null) {
-            notification.setTicketId(ticket.getId());
-        } else {
-            notification.setTicketId(0L);  // Default if not found
-        }
-    } catch (Exception e) {
-        notification.setTicketId(0L);  // Default on error
-    }
-        notificationRepository.save(notification);
-    }
-    
+    private void createUserNotification(
+        String userId,
+        String userRole,
+        String title,
+        String message,
+        String relatedTicketId) {
+
+    Notification n = new Notification();
+    n.setUserId(userId);
+    n.setUserRole(userRole);
+    n.setTitle(title);
+    n.setMessage(message);
+    n.setNotificationType("TICKET_UPDATE");
+    n.setRelatedTicketId(relatedTicketId);
+
+    SupportTicket t = ticketRepository.findByTicketId(relatedTicketId);
+    n.setTicketId(t != null ? t.getId() : null);
+
+    notificationRepository.save(n);
+}
+
+
     public List<Notification> getUserNotifications(String userId, String userRole) {
         return notificationRepository.findByUserIdAndUserRoleOrderByCreatedAtDesc(userId, userRole);
     }

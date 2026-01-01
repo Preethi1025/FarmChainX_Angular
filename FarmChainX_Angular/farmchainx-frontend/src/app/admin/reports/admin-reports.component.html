@@ -1,134 +1,40 @@
-<div class="flex min-h-screen bg-gray-100">
-  <!-- SIDEBAR -->
-  <div class="w-64 bg-white shadow-xl p-6 flex flex-col">
-    <h2 class="text-2xl font-bold text-purple-600 mb-8">
-      Admin Panel
-    </h2>
+<h1 class="text-3xl font-bold mb-8">System Reports</h1>
 
-    <button
-      (click)="navigateTo('/admin/dashboard')"
-      class="px-4 py-3 rounded-lg mb-2 text-left hover:bg-gray-100"
-    >
-      Dashboard
-    </button>
-    
-    <button
-      (click)="navigateTo('/admin/support')"
-      class="px-4 py-3 rounded-lg mb-2 text-left hover:bg-gray-100"
-    >
-      Support Dashboard
-    </button>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
 
-    <button
-      class="px-4 py-3 rounded-lg mb-6 text-left bg-purple-600 text-white"
-    >
-      System Reports
-    </button>
+  <!-- User Distribution -->
+  <div class="bg-white rounded-xl shadow p-6">
+    <h2 class="font-semibold mb-4">User Distribution</h2>
 
-    <div class="mt-auto">
-      <button
-        (click)="logout()"
-        class="w-full px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
-      >
-        Logout
-      </button>
+    <!-- HEIGHT IS CRITICAL -->
+    <div class="relative h-[300px]">
+      <canvas #userPie></canvas>
     </div>
   </div>
 
-  <!-- CONTENT -->
-  <div class="flex-1 p-10">
-    <h1 class="text-3xl font-bold mb-8">System Reports</h1>
+  <!-- User Count -->
+  <div class="bg-white rounded-xl shadow p-6">
+    <h2 class="font-semibold mb-4">User Count</h2>
 
-    <div *ngIf="!stats" class="text-center py-10">
-      <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
-      <p class="mt-2 text-gray-600">Loading reports...</p>
+    <div class="relative h-[300px]">
+      <canvas #userBar></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Crop-wise Summary -->
+<div class="bg-white rounded-xl shadow p-6">
+  <h2 class="font-semibold mb-6">Crop-wise Summary</h2>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+    <div class="relative h-[350px]">
+      <canvas #cropBar></canvas>
     </div>
 
-    <!-- USER REPORTS -->
-    <div *ngIf="stats && chartDataLoaded" class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-      <!-- User Distribution Stats -->
-      <div class="bg-white rounded-xl shadow p-6">
-        <h2 class="font-semibold mb-4">User Distribution</h2>
-        <div class="space-y-4">
-          <div *ngFor="let item of userData" class="flex items-center justify-between">
-            <div class="flex items-center">
-              <div [style.background-color]="getChartColors(userData.indexOf(item))" 
-                   class="w-4 h-4 rounded-full mr-3"></div>
-              <span class="font-medium">{{item.name}}</span>
-            </div>
-            <div class="flex items-center space-x-4">
-              <span class="text-2xl font-bold">{{formatNumber(item.value)}}</span>
-              <span class="w-20 bg-gray-200 rounded-full h-2">
-                <div [style.width.%]="(item.value / (stats.totalUsers || 1)) * 100" 
-                     [style.background-color]="getChartColors(userData.indexOf(item))" 
-                     class="h-2 rounded-full"></div>
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- User Count Bar Chart (Simple HTML Version) -->
-      <div class="bg-white rounded-xl shadow p-6">
-        <h2 class="font-semibold mb-4">User Count</h2>
-        <div class="h-64 flex items-end space-x-4 pt-8">
-          <div *ngFor="let item of userData; let i = index" class="flex flex-col items-center flex-1">
-            <div [style.height]="getBarHeight(item.value, userData)"
-                 [style.background-color]="getChartColors(i)"
-                 class="w-12 rounded-t-lg mb-2"></div>
-            <span class="text-sm font-medium">{{item.name}}</span>
-            <span class="text-xs text-gray-500">{{formatNumber(item.value)}}</span>
-          </div>
-        </div>
-      </div>
+    <div class="h-[350px]">
+      <canvas #cropPie></canvas>
     </div>
 
-    <!-- CROPS REPORTS -->
-    <div *ngIf="chartDataLoaded && cropChartData.length > 0" class="bg-white rounded-xl shadow p-6">
-      <h2 class="font-semibold mb-6">Crop-wise Summary</h2>
-
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <!-- Crop Count Bar Chart (Simple HTML Version) -->
-        <div>
-          <h3 class="text-sm font-medium text-gray-600 mb-3">Crop Count</h3>
-          <div class="h-80 flex items-end space-x-2 pt-8">
-            <div *ngFor="let item of cropChartData; let i = index" 
-                 class="flex flex-col items-center flex-1">
-              <div [style.height]="getBarHeight(item.count, cropChartData)"
-                   [style.background-color]="getChartColors(i)"
-                   class="w-8 rounded-t-lg mb-2"></div>
-              <span class="text-xs text-center truncate w-full">{{item.name}}</span>
-              <span class="text-xs text-gray-500">{{formatNumber(item.count)}}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Crop Distribution -->
-        <div>
-          <h3 class="text-sm font-medium text-gray-600 mb-3">Crop Distribution</h3>
-          <div class="space-y-4">
-            <div *ngFor="let item of cropChartData" class="flex items-center justify-between">
-              <div class="flex items-center">
-                <div [style.background-color]="getChartColors(cropChartData.indexOf(item))" 
-                     class="w-4 h-4 rounded-full mr-3"></div>
-                <span class="font-medium truncate">{{item.name}}</span>
-              </div>
-              <div class="flex items-center space-x-4">
-                <span class="text-lg font-bold">{{formatNumber(item.count)}}</span>
-                <span class="w-20 bg-gray-200 rounded-full h-2">
-                  <div [style.width.%]="(item.count / (crops.length || 1)) * 100" 
-                       [style.background-color]="getChartColors(cropChartData.indexOf(item))" 
-                       class="h-2 rounded-full"></div>
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div *ngIf="chartDataLoaded && cropChartData.length === 0" class="bg-white rounded-xl shadow p-6 text-center">
-      <p class="text-gray-500">No crop data available</p>
-    </div>
   </div>
 </div>

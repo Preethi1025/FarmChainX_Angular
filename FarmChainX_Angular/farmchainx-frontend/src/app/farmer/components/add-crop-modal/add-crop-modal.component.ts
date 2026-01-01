@@ -11,7 +11,7 @@ import { HttpClient } from '@angular/common/http';
 })
 export class AddCropModalComponent {
 
-  @Input() farmerId!: number;
+  @Input() farmerId!: string; 
   @Output() close = new EventEmitter<void>();
   @Output() cropAdded = new EventEmitter<void>();
 
@@ -80,42 +80,56 @@ export class AddCropModalComponent {
   /* ---------------- SUBMIT ---------------- */
 
   submit() {
-    if (!this.validate()) return;
+  if (!this.validate()) return;
 
-    this.loading = true;
-    this.error = '';
+  this.loading = true;
+  this.error = '';
 
-    const cropData = {
-      farmerId: this.farmerId,
-      cropName: this.form.cropName.trim(),
-      cropType: this.form.cropType,
-      variety: this.form.variety || null,
-      sowDate: this.form.sowDate,
-      expectedHarvestDate: this.form.expectedHarvestDate || null,
-      location: this.form.location.trim(),
-      estimatedYield: this.form.estimatedYield || null,
-      price: this.form.price,
-      quantity: this.form.quantity
-    };
+  const cropData = {
+    farmerId: this.farmerId,
+    cropName: this.form.cropName.trim(),
+    cropType: this.form.cropType,
+    variety: this.form.variety || null,
+    sowDate: this.form.sowDate,
+    expectedHarvestDate: this.form.expectedHarvestDate || null,
+    location: this.form.location.trim(),
+    estimatedYield: this.form.estimatedYield || null,
+    price: this.form.price,
+    quantity: this.form.quantity
+  };
 
-    const payload = new FormData();
-    payload.append('crop', new Blob([JSON.stringify(cropData)], { type: 'application/json' }));
-    if (this.cropImage) payload.append('image', this.cropImage);
+  const payload = new FormData();
+  payload.append(
+    'crop',
+    new Blob([JSON.stringify(cropData)], { type: 'application/json' })
+  );
 
-    this.http.post<any>('http://localhost:8080/api/crops/add-with-image', payload)
-      .subscribe({
-        next: (res) => {
-          this.generatedBatchId = res.batchId;
-          this.qrValue = `${window.location.origin}/trace/${res.batchId}`;
-          this.success = true;
-          this.cropAdded.emit();
-        },
-        error: (err) => {
-          this.error = err?.error?.message || 'Failed to add crop';
-        },
-        complete: () => this.loading = false
-      });
+  if (this.cropImage) {
+    payload.append('image', this.cropImage);
   }
+
+  this.http.post<any>(
+    'http://localhost:8080/api/crops/add-with-image',
+    payload
+  ).subscribe({
+    next: (res) => {
+      this.generatedBatchId = res.batchId;
+      this.qrValue = `${window.location.origin}/trace/${res.batchId}`;
+      this.success = true;
+      this.cropAdded.emit();
+    },
+    error: (err) => {
+      console.error(err);
+      this.error = err?.error?.error || 'Failed to add crop';
+      this.loading = false;
+    },
+    complete: () => {
+      this.loading = false;
+    }
+  });
+}
+
+
 
   reset() {
     this.success = false;

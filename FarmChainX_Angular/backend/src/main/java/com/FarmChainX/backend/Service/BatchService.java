@@ -24,9 +24,9 @@ public class BatchService {
     private final BatchTraceRepository batchTraceRepository;
 
     public BatchService(BatchRecordRepository batchRecordRepository,
-                        CropRepository cropRepository,
-                        ListingService listingService,
-                        BatchTraceRepository batchTraceRepository) {
+            CropRepository cropRepository,
+            ListingService listingService,
+            BatchTraceRepository batchTraceRepository) {
         this.batchRecordRepository = batchRecordRepository;
         this.cropRepository = cropRepository;
         this.listingService = listingService;
@@ -44,7 +44,8 @@ public class BatchService {
             batch.setBatchId(generateBatchId(batch.getCropType()));
 
         batch.setCreatedAt(LocalDateTime.now());
-        if (batch.getStatus() == null) batch.setStatus("PLANTED");
+        if (batch.getStatus() == null)
+            batch.setStatus("PLANTED");
 
         if ("HARVESTED".equalsIgnoreCase(batch.getStatus()) && batch.getHarvestDate() == null)
             batch.setHarvestDate(LocalDate.now());
@@ -123,8 +124,8 @@ public class BatchService {
             double farmerPrice = crop.getPrice() != null ? crop.getPrice() : 0.0;
 
             // 💰 Profit calculation
-            double farmerProfit = farmerPrice * 0.10;        // 10%
-            double distributorProfit = farmerPrice * 0.10;   // 10%
+            double farmerProfit = farmerPrice * 0.10; // 10%
+            double distributorProfit = farmerPrice * 0.10; // 10%
 
             double finalMarketPrice = farmerPrice + farmerProfit + distributorProfit;
 
@@ -135,8 +136,7 @@ public class BatchService {
             listing.setDistributorId(distributorId);
 
             listing.setQuantity(
-                    crop.getQuantity() != null ? Double.parseDouble(crop.getQuantity()) : 0.0
-            );
+                    crop.getQuantity() != null ? Double.parseDouble(crop.getQuantity()) : 0.0);
 
             // 👇 IMPORTANT: Marketplace sees ONLY final price
             listing.setPrice(finalMarketPrice);
@@ -150,8 +150,6 @@ public class BatchService {
 
         return batchRecordRepository.save(batch);
     }
-
-
 
     private Double parseDoubleSafe(String number) {
         try {
@@ -171,7 +169,7 @@ public class BatchService {
 
         batch.setStatus("REJECTED");
         batch.setRejectedBy(distributorId);
-        batch.setRejectionReason(reason);   // ✅ STORE REASON
+        batch.setRejectionReason(reason); // ✅ STORE REASON
         batch.setBlocked(true);
         batch.setUpdatedAt(LocalDateTime.now());
 
@@ -181,29 +179,38 @@ public class BatchService {
         saveTrace(
                 batch,
                 "REJECTED - Reason: " + (reason != null ? reason : "N/A"),
-                distributorId
-        );
+                distributorId);
 
         return batch;
     }
 
-
-    // ------------------- UPDATE STATUS -------------------
     @Transactional
     public BatchRecord updateStatus(String batchId, String status, String userId) {
+
         BatchRecord batch = batchRecordRepository.findById(batchId)
                 .orElseThrow(() -> new RuntimeException("Batch not found"));
 
+        // 1️⃣ Update batch
         batch.setStatus(status);
         batch.setUpdatedAt(LocalDateTime.now());
 
-        // if status becomes HARVESTED ensure harvestDate
         if ("HARVESTED".equalsIgnoreCase(status) && batch.getHarvestDate() == null) {
             batch.setHarvestDate(LocalDate.now());
         }
 
+        // 2️⃣ 🔥 UPDATE ALL CROPS IN THIS BATCH
+        List<Crop> crops = cropRepository.findByBatchId(batchId);
+        for (Crop crop : crops) {
+            crop.setStatus(status);
+        }
+        cropRepository.saveAll(crops);
+
+        // 3️⃣ Save batch
         batchRecordRepository.save(batch);
+
+        // 4️⃣ Trace
         saveTrace(batch, status, userId);
+
         return batch;
     }
 
@@ -220,8 +227,10 @@ public class BatchService {
             if (grade != null) {
                 // try to set average quality/confidence on batch if fields exist
                 try {
-                    batch.setAvgQualityScore(confidence != null ? confidence.doubleValue() : batch.getAvgQualityScore());
-                } catch (Throwable ignored) {}
+                    batch.setAvgQualityScore(
+                            confidence != null ? confidence.doubleValue() : batch.getAvgQualityScore());
+                } catch (Throwable ignored) {
+                }
             }
             batch.setUpdatedAt(LocalDateTime.now());
             batchRecordRepository.save(batch);
@@ -234,11 +243,13 @@ public class BatchService {
         }
         cropRepository.saveAll(crops);
 
-        // store confidence/avgQualityScore on batch record as well so frontend can read it easily
+        // store confidence/avgQualityScore on batch record as well so frontend can read
+        // it easily
         if (confidence != null) {
             try {
                 batch.setAvgQualityScore(confidence.doubleValue());
-            } catch (Throwable ignored) {}
+            } catch (Throwable ignored) {
+            }
         }
         batch.setUpdatedAt(LocalDateTime.now());
         batchRecordRepository.save(batch);
@@ -322,7 +333,6 @@ public class BatchService {
         return child;
     }
 
-
     // ------------------- MERGE BATCHES -------------------
     @Transactional
     public List<BatchRecord> mergeBatches(String targetBatchId, List<String> sourceBatchIds, String userId) {
@@ -385,7 +395,6 @@ public class BatchService {
 
     }
 
-
     // ------------------- GET BATCH TRACES -------------------
     public List<BatchTrace> getBatchTrace(String batchId) {
         return batchTraceRepository.findByBatchIdOrderByTimestampAsc(batchId);
@@ -393,8 +402,13 @@ public class BatchService {
 
     // ------------------- HELPERS -------------------
     private double parseQuantity(String q) {
-        if (q == null || q.isEmpty()) return 0.0;
-        try { return Double.parseDouble(q); } catch (NumberFormatException e) { return 0.0; }
+        if (q == null || q.isEmpty())
+            return 0.0;
+        try {
+            return Double.parseDouble(q);
+        } catch (NumberFormatException e) {
+            return 0.0;
+        }
     }
 
     private double roundToTwoDecimals(double v) {
@@ -440,7 +454,6 @@ public class BatchService {
         return data;
     }
 
-
     private String generateBatchId(String cropType) {
         String prefix = cropType != null && cropType.length() >= 3
                 ? cropType.substring(0, 3).toUpperCase()
@@ -459,6 +472,7 @@ public class BatchService {
         trace.setTimestamp(LocalDateTime.now());
         batchTraceRepository.save(trace);
     }
+
     public BatchRecord submitForApproval(String batchId, String userId) {
         BatchRecord batch = batchRecordRepository.findById(batchId)
                 .orElseThrow(() -> new RuntimeException("Batch not found"));

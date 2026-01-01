@@ -1,8 +1,7 @@
 <div class="flex min-h-screen bg-gray-100">
 
   <!-- SIDEBAR -->
-  <aside class="w-64 bg-slate-900 text-white flex flex-col">
-
+  <aside class="w-64 bg-slate-900 text-white flex flex-col z-20">
     <div class="p-6 text-xl font-bold border-b border-slate-700">
       🛠 Admin Panel
     </div>
@@ -30,7 +29,7 @@
       <a routerLink="/admin/reports"
          routerLinkActive="bg-slate-700"
          class="block px-4 py-2 rounded hover:bg-slate-800">
-        📈 System Reports
+        📈 Reports
       </a>
 
       <a routerLink="/admin/support"
@@ -48,12 +47,36 @@
         Logout
       </button>
     </div>
-
   </aside>
 
   <!-- MAIN CONTENT -->
-  <main class="flex-1 p-6 overflow-y-auto">
-    <router-outlet></router-outlet>
-  </main>
+  <div class="flex-1 flex flex-col">
 
+    <!-- TOP BAR -->
+    <header class="h-16 bg-white shadow flex items-center justify-between px-6 z-10">
+      <h1 class="text-lg font-semibold">Admin Dashboard</h1>
+
+      <!-- RIGHT ACTIONS -->
+      <div class="flex items-center gap-3">
+
+        <!-- REFRESH BUTTON -->
+        <button
+          (click)="refreshPage()"
+          title="Refresh"
+          class="p-2 rounded-full hover:bg-gray-100 transition">
+          🔄
+        </button>
+
+        <!-- NOTIFICATIONS -->
+        <app-notification-bell></app-notification-bell>
+
+      </div>
+    </header>
+
+    <!-- ROUTER CONTENT -->
+    <main class="flex-1 overflow-y-auto p-6">
+      <router-outlet></router-outlet>
+    </main>
+
+  </div>
 </div>

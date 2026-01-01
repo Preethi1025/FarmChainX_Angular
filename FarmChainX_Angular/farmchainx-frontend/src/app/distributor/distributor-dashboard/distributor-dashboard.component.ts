@@ -43,10 +43,10 @@ export class DistributorDashboardComponent implements OnInit {
 
   fetchBatches(): void {
     this.http.get<any[]>(`${this.API}/batches/pending`)
-      .subscribe(res => this.pendingBatches = res || []);
+      .subscribe(res => this.pendingBatches = (res || []).filter(b => b != null));
 
     this.http.get<any[]>(`${this.API}/batches/approved/${this.distributorId}`)
-      .subscribe(res => this.approvedBatches = res || []);
+      .subscribe(res => this.approvedBatches = (res || []).filter(b => b != null));
   }
 
   approveBatch(batchId: string): void {
@@ -63,10 +63,7 @@ export class DistributorDashboardComponent implements OnInit {
     if (!reason) return;
 
     this.http
-      .put(
-        `${this.API}/batches/distributor/reject/${batchId}/${this.distributorId}`,
-        { reason }
-      )
+      .put(`${this.API}/batches/distributor/reject/${batchId}/${this.distributorId}`, { reason })
       .subscribe({
         next: () => this.fetchBatches(),
         error: () => alert('Failed to reject batch')
@@ -82,7 +79,10 @@ export class DistributorDashboardComponent implements OnInit {
   fetchOrders(): void {
     this.http
       .get<any[]>(`${this.API}/orders/distributor/${this.distributorId}`)
-      .subscribe(res => this.orders = res || []);
+      .subscribe({
+        next: res => this.orders = (res || []).filter(o => o != null && o.status),
+        error: () => this.orders = []
+      });
   }
 
   updateStatus(orderId: number, status: string): void {
@@ -102,31 +102,31 @@ export class DistributorDashboardComponent implements OnInit {
 
   /* ---------------- FILTERS ---------------- */
   onTabChange(t: 'BATCHES' | 'ORDERS' | 'HISTORY') {
-  this.tab = t;
+    this.tab = t;
 
-  if (t === 'ORDERS' || t === 'HISTORY') {
-    this.fetchOrders();
+    if (t === 'ORDERS' || t === 'HISTORY') {
+      this.fetchOrders();
+    }
   }
-}
-/* ---------------- COMPUTED (WORKING LOGIC) ---------------- */
 
-get liveOrders() {
-  return this.orders.filter(o => o.status !== 'DELIVERED');
-}
+  /* ---------------- COMPUTED (SAFE LOGIC) ---------------- */
 
-get historyOrders() {
-  return this.orders.filter(o => o.status === 'DELIVERED');
-}
+  get liveOrders() {
+    return this.orders.filter(o => o?.status && o.status !== 'DELIVERED');
+  }
 
-get totalDistributorEarnings() {
-  return this.historyOrders.reduce(
-    (sum, o) => sum + o.totalAmount,
-    0
-  );
-}
+  get historyOrders() {
+    return this.orders.filter(o => o?.status && o.status === 'DELIVERED');
+  }
 
-getDistributorProfit(order: any) {
-  return Math.round(order.totalAmount * 0.1);
-}
+  get totalDistributorEarnings() {
+    return this.historyOrders.reduce(
+      (sum, o) => sum + (o?.totalAmount || 0),
+      0
+    );
+  }
 
+  getDistributorProfit(order: any) {
+    return Math.round((order?.totalAmount || 0) * 0.1);
+  }
 }

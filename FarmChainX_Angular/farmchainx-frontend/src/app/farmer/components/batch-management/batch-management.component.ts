@@ -30,15 +30,19 @@ export class BatchManagementComponent implements OnInit {
 
   batches: any[] = [];
   batchCrops: Record<string, any[]> = {};
+
   expandedBatchId: string | null = null;
 
-  loading = false;
-  loadingRow: string | null = null;
+  // 🔥 SEPARATE LOADERS
+  loadingCrops: Record<string, boolean> = {};
+  loadingAction: Record<string, boolean> = {};
   processingHarvest = false;
+
   error = '';
 
+  // 🔥 UI STATE (INITIALIZED PER BATCH)
   statusUpdate: Record<string, string> = {};
-  qualityUpdate: Record<string, { grade?: string; confidence?: number }> = {};
+  qualityUpdate: Record<string, { grade: string; confidence: number | null }> = {};
   mergeTarget: Record<string, string> = {};
 
   constructor(private http: HttpClient) {}
@@ -52,7 +56,6 @@ export class BatchManagementComponent implements OnInit {
   fetchBatches(): void {
     if (!this.user?.id) return;
 
-    this.loading = true;
     this.error = '';
 
     const url =
@@ -61,19 +64,32 @@ export class BatchManagementComponent implements OnInit {
         : `${this.apiBase}/pending`;
 
     this.http.get<any[]>(url).subscribe({
-      next: res => this.batches = res || [],
-      error: () => this.error = 'Failed to load batches.',
-      complete: () => this.loading = false
+      next: res => {
+        this.batches = res || [];
+
+        // 🔥 preload UI state
+        this.batches.forEach(b => {
+          this.statusUpdate[b.batchId] = b.status;
+
+          if (!this.qualityUpdate[b.batchId]) {
+            this.qualityUpdate[b.batchId] = {
+              grade: '',
+              confidence: null
+            };
+          }
+        });
+      },
+      error: () => this.error = 'Failed to load batches.'
     });
   }
 
   fetchCropsForBatch(batchId: string): void {
-    this.loadingRow = batchId;
+    this.loadingCrops[batchId] = true;
 
     this.http.get<any[]>(`${this.apiBase}/${batchId}/crops`).subscribe({
       next: res => this.batchCrops[batchId] = res || [],
       error: () => this.error = 'Failed to load crops.',
-      complete: () => this.loadingRow = null
+      complete: () => this.loadingCrops[batchId] = false
     });
   }
 
@@ -90,48 +106,67 @@ export class BatchManagementComponent implements OnInit {
     if (!this.batchCrops[batchId]) {
       this.fetchCropsForBatch(batchId);
     }
+
+    // 🔥 ensure bindings always exist
+    if (!this.qualityUpdate[batchId]) {
+      this.qualityUpdate[batchId] = { grade: '', confidence: null };
+    }
+
+    if (!this.statusUpdate[batchId]) {
+      const batch = this.batches.find(b => b.batchId === batchId);
+      this.statusUpdate[batchId] = batch?.status || '';
+    }
   }
 
   /* ---------------- STATUS ---------------- */
 
   applyStatusUpdate(batchId: string): void {
-    const status = this.statusUpdate[batchId];
-    if (!status) return alert('Select status');
+  const status = this.statusUpdate[batchId];
+  if (!status) return alert('Select status');
 
-    this.loadingRow = batchId;
+  this.loadingAction[batchId] = true;
 
-    this.http.put(`${this.apiBase}/${batchId}/status`, {
-      status,
-      userId: this.user.id
-    }).subscribe({
-      next: () => {
-        this.batches = this.batches.map(b =>
-          b.batchId === batchId ? { ...b, status } : b
-        );
-        alert('Status updated');
-      },
-      error: () => alert('Status update failed'),
-      complete: () => this.loadingRow = null
-    });
-  }
+  this.http.put(`${this.apiBase}/${batchId}/status`, {
+    status,
+    userId: this.user.id
+  }).subscribe({
+    next: () => {
+      // 🔥 Update batch status
+      this.batches = this.batches.map(b =>
+        b.batchId === batchId ? { ...b, status } : b
+      );
+
+      // 🔥 ALSO update crop statuses in UI
+      if (this.batchCrops[batchId]) {
+        this.batchCrops[batchId] = this.batchCrops[batchId].map(c => ({
+          ...c,
+          status
+        }));
+      }
+    },
+    error: () => alert('Status update failed'),
+    complete: () => this.loadingAction[batchId] = false
+  });
+}
+
 
   /* ---------------- QUALITY ---------------- */
 
   applyQualityUpdate(batchId: string): void {
     const q = this.qualityUpdate[batchId];
-    if (!q?.grade) return alert('Select grade');
+    if (!q.grade) return alert('Select grade');
 
-    this.loadingRow = batchId;
+    this.loadingAction[batchId] = true;
 
     this.http.put(`${this.apiBase}/${batchId}/status`, {
       status: 'QUALITY_UPDATED',
       userId: this.user.id,
       qualityGrade: q.grade,
-      confidence: q.confidence ?? null
+      confidence: q.confidence
     }).subscribe({
-      next: () => alert('Quality updated'),
+      next: () => {},
       error: () => alert('Quality update failed'),
-      complete: () => this.loadingRow = null
+      complete: () => this.loadingAction[batchId] = false
     });
   }
 
@@ -141,7 +176,7 @@ export class BatchManagementComponent implements OnInit {
     const qty = prompt('Enter quantity to split');
     if (!qty) return;
 
-    this.loadingRow = batchId;
+    this.loadingAction[batchId] = true;
 
     this.http.post(`${this.apiBase}/${batchId}/split`, {
       quantity: Number(qty),
@@ -149,7 +184,7 @@ export class BatchManagementComponent implements OnInit {
     }).subscribe({
       next: () => this.fetchBatches(),
       error: () => alert('Split failed'),
-      complete: () => this.loadingRow = null
+      complete: () => this.loadingAction[batchId] = false
     });
   }
 
@@ -157,7 +192,7 @@ export class BatchManagementComponent implements OnInit {
     const targetId = this.mergeTarget[sourceId];
     if (!targetId || targetId === sourceId) return;
 
-    this.loadingRow = sourceId;
+    this.loadingAction[sourceId] = true;
 
     this.http.post(`${this.apiBase}/merge/${targetId}`, {
       sourceBatchIds: [sourceId],
@@ -165,20 +200,8 @@ export class BatchManagementComponent implements OnInit {
     }).subscribe({
       next: () => this.fetchBatches(),
       error: () => alert('Merge failed'),
-      complete: () => this.loadingRow = null
+      complete: () => this.loadingAction[sourceId] = false
     });
-  }
-
-  /* ---------------- DISTRIBUTOR ---------------- */
-
-  approveBatch(batchId: string): void {
-    this.http.put(`${this.apiBase}/distributor/approve/${batchId}/${this.user.id}`, {})
-      .subscribe(() => this.fetchBatches());
-  }
-
-  rejectBatch(batchId: string): void {
-    this.http.put(`${this.apiBase}/distributor/reject/${batchId}/${this.user.id}`, {})
-      .subscribe(() => this.fetchBatches());
   }
 
   /* ---------------- HARVEST ---------------- */
