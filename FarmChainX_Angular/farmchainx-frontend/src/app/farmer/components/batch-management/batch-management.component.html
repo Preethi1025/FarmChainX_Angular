@@ -14,93 +14,90 @@
         <button
           (click)="processDailyHarvest()"
           [disabled]="processingHarvest || user?.role !== 'FARMER'"
-          class="px-3 py-1.5 text-xs rounded bg-green-100 text-green-700">
+          class="px-3 py-1.5 text-xs rounded bg-green-100 text-green-700 hover:bg-green-200 transition">
           {{ processingHarvest ? 'Processing…' : 'Process Today’s Harvest' }}
         </button>
 
         <button
           (click)="fetchBatches()"
-          class="px-3 py-1.5 text-xs border rounded">
+          class="px-3 py-1.5 text-xs border rounded hover:bg-gray-100 transition">
           Refresh
         </button>
 
         <button
           (click)="close.emit()"
-          class="px-3 py-1.5 text-xs bg-gray-800 text-white rounded">
+          class="px-3 py-1.5 text-xs bg-gray-800 text-white rounded hover:bg-gray-900 transition">
           Close
         </button>
       </div>
     </div>
 
-    <!-- ERROR -->
+    <!-- ERROR MESSAGE -->
     <div *ngIf="error" class="m-4 p-3 bg-red-50 text-red-700 text-xs rounded">
       {{ error }}
     </div>
 
-    <!-- TABLE -->
-    <div class="p-6">
-      <table class="w-full text-sm border">
+    <!-- BATCHES TABLE -->
+    <div class="p-6 overflow-x-auto">
+      <table class="w-full text-sm border border-gray-200 rounded-lg">
         <thead class="bg-gray-50">
           <tr>
-            <th>Batch</th>
-            <th>Crop</th>
-            <th>Qty</th>
-            <th>Status</th>
-            <th>Quality</th>
-            <th>Actions</th>
+            <th class="p-2 text-left">Batch</th>
+            <th class="p-2 text-left">Crop</th>
+            <th class="p-2 text-left">Qty</th>
+            <th class="p-2 text-left">Status</th>
+            <th class="p-2 text-left">Quality</th>
+            <th class="p-2 text-left">Actions</th>
           </tr>
         </thead>
-
         <tbody>
           <ng-container *ngFor="let b of batches">
-
-            <!-- ROW -->
-            <tr class="border-b">
-              <td>
-                <button (click)="toggleExpand(b.batchId)">
-                  {{ expandedBatchId === b.batchId ? '▼' : '▶' }}
-                  {{ b.batchId }}
+            <!-- BATCH ROW -->
+            <tr class="border-b hover:bg-gray-50 transition">
+              <td class="p-2">
+                <button class="flex items-center gap-1 text-left font-medium" (click)="toggleExpand(b.batchId)">
+                  {{ expandedBatchId === b.batchId ? '▼' : '▶' }} {{ b.batchId }}
                 </button>
               </td>
-              <td>{{ b.cropType }}</td>
-              <td>{{ b.totalQuantity }} kg</td>
-              <td>
-                <span class="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-xs">
+              <td class="p-2">{{ b.cropType }}</td>
+              <td class="p-2">{{ b.totalQuantity }} kg</td>
+              <td class="p-2">
+                <span class="px-2 py-1 rounded-full text-xs font-medium"
+                      [ngClass]="{
+                        'bg-green-100 text-green-700': b.status === 'ACTIVE',
+                        'bg-yellow-100 text-yellow-700': b.status === 'PENDING',
+                        'bg-red-100 text-red-700': b.status === 'CLOSED',
+                        'bg-gray-100 text-gray-700': b.status !== 'ACTIVE' && b.status !== 'PENDING' && b.status !== 'CLOSED'
+                      }">
                   {{ b.status }}
                 </span>
               </td>
-              <td>
-                {{ b.avgQualityScore != null ? (b.avgQualityScore + '%') : '-' }}
-              </td>
-              <td>
-                <button (click)="toggleExpand(b.batchId)">Details</button>
+              <td class="p-2">{{ b.avgQualityScore != null ? (b.avgQualityScore + '%') : '-' }}</td>
+              <td class="p-2">
+                <button class="text-xs text-blue-600 hover:underline" (click)="toggleExpand(b.batchId)">
+                  Details
+                </button>
               </td>
             </tr>
 
-            <!-- EXPANDED -->
+            <!-- EXPANDED ROW -->
             <tr *ngIf="expandedBatchId === b.batchId">
               <td colspan="6" class="bg-gray-50 p-4">
+                <div class="grid md:grid-cols-[2fr_1.3fr] gap-6">
 
-                <div class="grid md:grid-cols-[2fr_1.3fr] gap-4">
-
-                  <!-- LEFT -->
+                  <!-- LEFT: Crops List -->
                   <div>
-                    <p class="text-xs font-semibold mb-2">
-                      Crops in this batch
-                    </p>
+                    <p class="text-xs font-semibold mb-2">Crops in this batch</p>
 
-                    <div *ngIf="loadingCrops[b.batchId]"
-                         class="text-xs text-gray-500">
+                    <div *ngIf="loadingCrops[b.batchId]" class="text-xs text-gray-500">
                       Loading crops…
                     </div>
 
-                    <div *ngIf="!loadingCrops[b.batchId] && !batchCrops[b.batchId]?.length"
-                         class="text-xs text-gray-400">
+                    <div *ngIf="!loadingCrops[b.batchId] && !batchCrops[b.batchId]?.length" class="text-xs text-gray-400">
                       No crops found
                     </div>
 
-                    <div *ngFor="let c of batchCrops[b.batchId]"
-                         class="bg-white border rounded-lg p-2 mb-2">
+                    <div *ngFor="let c of batchCrops[b.batchId]" class="bg-white border rounded-lg p-2 mb-2">
                       <p class="text-xs font-medium">{{ c.cropName }}</p>
                       <p class="text-[11px] text-gray-500">
                         Qty: {{ c.quantity }} | Status: {{ c.status }}
@@ -108,63 +105,42 @@
                     </div>
                   </div>
 
-                  <!-- RIGHT -->
+                  <!-- RIGHT: Actions -->
                   <div class="space-y-3">
 
-                    <!-- QR -->
-                    <div class="bg-white border rounded-lg p-3">
-                      <p class="text-xs font-semibold mb-1">Traceability QR</p>
-                      <img class="w-24 h-24"
-                        [src]="'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + getQrUrl(b)" />
-                      <a class="block text-[11px] text-green-600 mt-1"
-                         [href]="getQrUrl(b)"
-                         target="_blank">
+                    <!-- TRACE QR -->
+                    <div class="bg-white border rounded-lg p-3 flex flex-col items-center gap-2">
+                      <p class="text-xs font-semibold">Traceability QR</p>
+                      <img class="w-24 h-24" [src]="'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + getQrUrl(b)" />
+                      <a class="text-[11px] text-green-600 hover:underline" [href]="getQrUrl(b)" target="_blank">
                         Open trace page
                       </a>
                     </div>
 
-                    <!-- STATUS -->
+                    <!-- STATUS UPDATE -->
                     <div class="bg-white border rounded-lg p-3">
                       <p class="text-xs font-semibold mb-1">Update Status</p>
                       <div class="flex gap-2">
-                        <select
-                          [(ngModel)]="statusUpdate[b.batchId]"
-                          class="flex-1">
+                        <select [(ngModel)]="statusUpdate[b.batchId]" class="flex-1 p-1 border rounded">
                           <option value="">Select</option>
-                          <option *ngFor="let s of STATUS_OPTIONS" [value]="s">
-                            {{ s }}
-                          </option>
+                          <option *ngFor="let s of STATUS_OPTIONS" [value]="s">{{ s }}</option>
                         </select>
-
-                        <button
-                          (click)="applyStatusUpdate(b.batchId)"
-                          [disabled]="loadingAction[b.batchId]">
+                        <button (click)="applyStatusUpdate(b.batchId)" [disabled]="loadingAction[b.batchId]" class="px-2 py-1 text-xs rounded bg-blue-600 text-white hover:bg-blue-700 transition">
                           {{ loadingAction[b.batchId] ? 'Saving…' : 'Save' }}
                         </button>
                       </div>
                     </div>
 
-                    <!-- QUALITY -->
-                    <div class="bg-white border rounded-lg p-3"
-                         *ngIf="qualityUpdate[b.batchId]">
+                    <!-- QUALITY UPDATE -->
+                    <div *ngIf="qualityUpdate[b.batchId]" class="bg-white border rounded-lg p-3">
                       <p class="text-xs font-semibold mb-1">Quality Grade</p>
-                      <div class="flex gap-2">
-                        <select
-                          [(ngModel)]="qualityUpdate[b.batchId].grade">
+                      <div class="flex gap-2 items-center">
+                        <select [(ngModel)]="qualityUpdate[b.batchId].grade" class="p-1 border rounded text-xs">
                           <option value="">Grade</option>
-                          <option *ngFor="let q of QUALITY_OPTIONS" [value]="q">
-                            {{ q }}
-                          </option>
+                          <option *ngFor="let q of QUALITY_OPTIONS" [value]="q">{{ q }}</option>
                         </select>
-
-                        <input
-                          type="number"
-                          placeholder="Confidence"
-                          [(ngModel)]="qualityUpdate[b.batchId].confidence" />
-
-                        <button
-                          (click)="applyQualityUpdate(b.batchId)"
-                          [disabled]="loadingAction[b.batchId]">
+                        <input type="number" placeholder="Confidence" [(ngModel)]="qualityUpdate[b.batchId].confidence" class="p-1 border rounded w-20 text-xs" />
+                        <button (click)="applyQualityUpdate(b.batchId)" [disabled]="loadingAction[b.batchId]" class="px-2 py-1 text-xs rounded bg-blue-600 text-white hover:bg-blue-700 transition">
                           {{ loadingAction[b.batchId] ? 'Saving…' : 'Save' }}
                         </button>
                       </div>
@@ -173,37 +149,18 @@
                     <!-- SPLIT / MERGE -->
                     <div class="bg-white border rounded-lg p-3">
                       <p class="text-xs font-semibold mb-1">Split / Merge</p>
-
-                      <button
-                        (click)="splitBatch(b.batchId)"
-                        [disabled]="loadingAction[b.batchId]"
-                        class="mr-2">
-                        Split
-                      </button>
-
-                      <select [(ngModel)]="mergeTarget[b.batchId]">
-                        <option value="">Merge into</option>
-                        <option *ngFor="let x of batches" [value]="x.batchId">
-                          {{ x.batchId }}
-                        </option>
-                      </select>
-
-                      <button
-                        (click)="mergeBatch(b.batchId)"
-                        [disabled]="loadingAction[b.batchId]">
-                        Merge
-                      </button>
-                    </div>
-
-                    <!-- TRACE -->
-                    <div class="bg-white border rounded-lg p-3">
-                      <p class="text-xs font-semibold mb-1">Recent Trace</p>
-                      <app-trace-preview [batchId]="b.batchId"></app-trace-preview>
+                      <div class="flex gap-2 items-center flex-wrap">
+                        <button (click)="splitBatch(b.batchId)" [disabled]="loadingAction[b.batchId]" class="px-2 py-1 text-xs rounded bg-purple-600 text-white hover:bg-purple-700 transition">Split</button>
+                        <select [(ngModel)]="mergeTarget[b.batchId]" class="p-1 border rounded text-xs">
+                          <option value="">Merge into</option>
+                          <option *ngFor="let x of batches" [value]="x.batchId">{{ x.batchId }}</option>
+                        </select>
+                        <button (click)="mergeBatch(b.batchId)" [disabled]="loadingAction[b.batchId]" class="px-2 py-1 text-xs rounded bg-purple-600 text-white hover:bg-purple-700 transition">Merge</button>
+                      </div>
                     </div>
 
                   </div>
                 </div>
-
               </td>
             </tr>
 
@@ -211,5 +168,6 @@
         </tbody>
       </table>
     </div>
+
   </div>
 </div>

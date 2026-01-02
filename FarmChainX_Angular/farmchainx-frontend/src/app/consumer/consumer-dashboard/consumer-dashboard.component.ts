@@ -3,7 +3,6 @@ import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LucideAngularModule } from 'lucide-angular';
 
 @Component({
   standalone: true,
@@ -12,25 +11,25 @@ import { LucideAngularModule } from 'lucide-angular';
   imports: [
     CommonModule,
     FormsModule,
-    RouterModule,
-    LucideAngularModule
+    RouterModule
   ]
 })
 export class ConsumerDashboardComponent implements OnInit {
 
   user: any;
-  showAIAssistant = false;
+
+  cart: any[] = [];
+  cartCount = 0;
+
+  private readonly CART_KEY = 'cart';
 
   constructor(
     private auth: AuthService,
-    public router: Router  // Changed to public for template access
+    public router: Router
   ) {}
 
   ngOnInit(): void {
     this.user = this.auth.user;
-    console.log('ConsumerDashboard initialized');
-    console.log('Current user:', this.user);
-    console.log('Current URL:', window.location.href);
 
     if (!this.user) {
       this.router.navigate(['/login'], { replaceUrl: true });
@@ -39,65 +38,80 @@ export class ConsumerDashboardComponent implements OnInit {
 
     if (this.user.role !== 'BUYER') {
       this.router.navigate(['/'], { replaceUrl: true });
+      return;
     }
+
+    this.loadCart();
+  }
+
+  // ---------------- CART LOGIC ----------------
+
+  loadCart() {
+    const savedCart = localStorage.getItem(this.CART_KEY);
+    const rawCart = savedCart ? JSON.parse(savedCart) : [];
+
+    // 🔥 NORMALIZE CART DATA
+    this.cart = rawCart.map((item: any) => ({
+      listingId: item.listingId,
+      name: item.name || item.cropName || 'Unknown Product',
+      price: item.price,
+      image: item.image || item.cropImageUrl,
+      quantity: item.quantity || 1
+    }));
+
+    this.syncCart();
+  }
+
+  addToCart(product: any) {
+    const index = this.cart.findIndex(
+      item => item.listingId === product.listingId
+    );
+
+    if (index !== -1) {
+      this.cart[index].quantity += 1;
+    } else {
+      this.cart.push({
+        listingId: product.listingId,
+        name: product.cropName,              // ✅ FIXED
+        price: product.price,
+        image: product.cropImageUrl,
+        quantity: 1
+      });
+    }
+
+    this.syncCart();
+  }
+
+  removeFromCart(index: number) {
+    this.cart.splice(index, 1);
+    this.syncCart();
+  }
+
+  clearCart() {
+    this.cart = [];
+    localStorage.removeItem(this.CART_KEY);
+    this.cartCount = 0;
+  }
+
+  private syncCart() {
+    localStorage.setItem(this.CART_KEY, JSON.stringify(this.cart));
+    this.cartCount = this.cart.reduce(
+      (sum, item) => sum + item.quantity, 0
+    );
+  }
+
+  // ---------------- NAVIGATION ----------------
+
+  goToCart() {
+    this.router.navigate(['/consumer/cart']);
   }
 
   go(path: string) {
-    console.log('Navigating to:', path);
     this.router.navigate([path]);
   }
 
-  // Method to open AI Assistant page
   openAIAssistant() {
-    console.log('=== AI Assistant Button Clicked ===');
-    console.log('Current route:', this.router.url);
-    console.log('Current full URL:', window.location.href);
-    console.log('Attempting to navigate to /consumer/ai-assistant');
-    
-    // Try navigation with promise handling
-    this.router.navigate(['/consumer/ai-assistant']).then(
-      (success) => {
-        if (success) {
-          console.log('✅ Navigation successful!');
-          console.log('New URL:', window.location.href);
-        } else {
-          console.log('⚠️ Navigation returned false');
-          // Try alternative method
-          this.tryAlternativeNavigation();
-        }
-      },
-      (error) => {
-        console.error('❌ Navigation error:', error);
-        this.tryAlternativeNavigation();
-      }
-    );
-  }
-
-  private tryAlternativeNavigation() {
-    console.log('Trying alternative navigation method...');
-    
-    // Method 1: navigateByUrl
-    this.router.navigateByUrl('/consumer/ai-assistant').then(
-      (success) => {
-        console.log('navigateByUrl result:', success ? '✅ Success' : '❌ Failed');
-        if (!success) {
-          // Method 2: Window location (direct)
-          console.log('Trying window.location.href...');
-          window.location.href = '/consumer/ai-assistant';
-        }
-      },
-      (error) => {
-        console.error('navigateByUrl error:', error);
-        // Method 2: Window location (direct)
-        console.log('Trying window.location.href...');
-        window.location.href = '/consumer/ai-assistant';
-      }
-    );
-  }
-  
-  // Method to toggle modal version (kept for backward compatibility)
-  toggleAIAssistant() {
-    console.log('Toggling AI Assistant modal');
-    this.showAIAssistant = !this.showAIAssistant;
+    this.router.navigate(['/consumer/ai-assistant'])
+      .catch(() => window.location.href = '/consumer/ai-assistant');
   }
 }

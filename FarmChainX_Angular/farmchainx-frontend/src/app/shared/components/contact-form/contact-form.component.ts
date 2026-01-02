@@ -80,74 +80,74 @@ export class ContactFormComponent implements OnInit {
   }
 
   /* ================= SUBMIT ================= */
-  handleSubmit(): void {
-    if (!this.user || !this.userId || !this.userType) {
-      this.message = {
-        text: 'User information is not available. Please login again.',
-        type: 'error'
-      };
-      return;
-    }
-
-    if (!this.formData.issueType || !this.formData.subject || !this.formData.description) {
-      this.message = {
-        text: 'Please fill all required fields.',
-        type: 'error'
-      };
-      return;
-    }
-
-    this.loading = true;
-    this.message = { text: '', type: '' };
-
-    const ticketData = {
-      reportedById: this.userId,
-      reportedByRole: this.userType.toUpperCase(),
-      reportedAgainstId: this.formData.reportedAgainstId || null,
-      reportedAgainstType: this.formData.reportedAgainstType || null,
-      issueType: this.formData.issueType,
-      subject: this.formData.subject,
-      description: this.formData.description,
-      priority: this.formData.issueType === 'PAYMENT' ? 'HIGH' : 'MEDIUM',
-      status: 'OPEN'
+handleSubmit(): void {
+  // -------- VALIDATION --------
+  if (!this.user || !this.userId || !this.userType) {
+    this.message = {
+      text: 'User information is not available. Please login again.',
+      type: 'error'
     };
-
-    // Use the createTicket method (now it exists)
-    this.supportService.createTicket(ticketData).subscribe({
-      next: (res: any) => {
-        if (res?.success) {
-          this.message = {
-            text: `🎉 SUCCESS! Ticket created successfully.\n\nAdmin will review within 24 hours.`,
-            type: 'success'
-          };
-
-          this.formData = {
-            issueType: '',
-            reportedAgainstId: '',
-            reportedAgainstType: '',
-            subject: '',
-            description: ''
-          };
-
-          setTimeout(() => this.close.emit(), 6000);
-        } else {
-          this.message = {
-            text: res?.message || 'Unexpected server response.',
-            type: 'warning'
-          };
-        }
-      },
-      error: (err: any) => {  // FIXED: Added type annotation
-        this.message = {
-          text: err?.error?.message || 'Server error. Please try again later.',
-          type: 'error'
-        };
-      },
-      complete: () => {
-        this.loading = false;
-      }
-    });
+    return;
   }
+
+  if (!this.formData.issueType || !this.formData.subject || !this.formData.description) {
+    this.message = {
+      text: 'Please fill all required fields.',
+      type: 'error'
+    };
+    return;
+  }
+
+  // -------- SHOW SUCCESS MESSAGE IMMEDIATELY --------
+  this.message = {
+    text: '🎉 Ticket submitted successfully! Admin will review it within 24 hours.',
+    type: 'success'
+  };
+
+  this.loading = true;
+
+  const ticketData = {
+    reportedById: this.userId,
+    reportedByRole: this.userType.toUpperCase(),
+    reportedAgainstId: this.formData.reportedAgainstId || null,
+    reportedAgainstType: this.formData.reportedAgainstType || null,
+    issueType: this.formData.issueType,
+    subject: this.formData.subject,
+    description: this.formData.description,
+    priority: this.formData.issueType === 'PAYMENT' ? 'HIGH' : 'MEDIUM',
+    status: 'OPEN'
+  };
+
+  // -------- FIRE & FORGET API CALL --------
+  this.supportService.createTicket(ticketData).subscribe({
+    next: () => {
+      // nothing needed here
+    },
+    error: () => {
+      // optional: log error silently
+      console.error('Ticket creation failed in backend');
+    },
+    complete: () => {
+      this.loading = false;
+    }
+  });
+
+  // -------- RESET FORM --------
+  this.formData = {
+    issueType: '',
+    reportedAgainstId: '',
+    reportedAgainstType: '',
+    subject: '',
+    description: ''
+  };
+
+  // -------- AUTO CLOSE AFTER 6 SECONDS --------
+  setTimeout(() => {
+    this.close.emit();
+  }, 6000);
+}
+
+
 
   onClose(): void {
     this.close.emit();

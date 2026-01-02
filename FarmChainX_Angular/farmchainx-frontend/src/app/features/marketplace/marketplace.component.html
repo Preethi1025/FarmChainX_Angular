@@ -1,132 +1,114 @@
-<div class="min-h-screen bg-gray-50 p-6">
+<div *ngIf="loading" class="loading">
+  Loading Marketplace...
+</div>
 
-  <!-- HEADER -->
-  <div class="flex justify-between items-center mb-6">
-    <div>
-      <h1 class="text-3xl font-bold">🌾 Marketplace</h1>
-      <p class="text-gray-600">
-        Buy fresh, traceable products directly from farmers
-      </p>
-    </div>
-  </div>
+<div *ngIf="!loading">
 
-  <!-- FILTERS -->
-  <div class="bg-white rounded-xl shadow p-4 mb-6 grid grid-cols-1 md:grid-cols-5 gap-4">
-    <input type="text" placeholder="Search crop..." [(ngModel)]="search"
-      class="border rounded px-3 py-2 md:col-span-2" />
+  <h1>🌾 Marketplace</h1>
+  <p>Buy fresh products directly from farmers</p>
 
-    <input type="number" placeholder="Min ₹" [(ngModel)]="minPrice" class="border rounded px-3 py-2" />
+  <!-- FILTER BAR -->
+  <!-- FILTER BAR -->
+<div class="filters">
+  <input
+    type="text"
+    placeholder="Search crop..."
+    [value]="search"
+    (input)="search=$any($event.target).value; applyFilters()"
+    class="filter-input"
+  />
 
-    <input type="number" placeholder="Max ₹" [(ngModel)]="maxPrice" class="border rounded px-3 py-2" />
+  <input
+    type="number"
+    placeholder="Min ₹"
+    [value]="minPrice"
+    (input)="minPrice=$any($event.target).valueAsNumber; applyFilters()"
+    class="filter-input"
+  />
 
-    <select [(ngModel)]="sortBy" class="border rounded px-3 py-2">
-      <option value="">Sort</option>
-      <option value="PRICE_ASC">Price ↑</option>
-      <option value="PRICE_DESC">Price ↓</option>
-      <option value="QTY_ASC">Qty ↑</option>
-      <option value="QTY_DESC">Qty ↓</option>
-    </select>
-  </div>
+  <input
+    type="number"
+    placeholder="Max ₹"
+    [value]="maxPrice"
+    (input)="maxPrice=$any($event.target).valueAsNumber; applyFilters()"
+    class="filter-input"
+  />
 
-  <!-- LOADING -->
-  <div *ngIf="loading" class="text-center text-gray-500">
-    Loading Marketplace...
-  </div>
+  <select
+    [value]="sortBy"
+    (change)="sortBy=$any($event.target).value; applyFilters()"
+    class="filter-input"
+  >
+    <option value="">Sort</option>
+    <option value="PRICE_ASC">Price ↑</option>
+    <option value="PRICE_DESC">Price ↓</option>
+    <option value="QTY_ASC">Qty ↑</option>
+    <option value="QTY_DESC">Qty ↓</option>
+  </select>
+</div>
+
 
   <!-- PRODUCTS GRID -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+  <div class="grid">
+    <div class="card" *ngFor="let p of filteredProducts">
+      <img [src]="p.cropImageUrl" [alt]="p.cropName" />
 
-    <div *ngFor="let p of filteredProducts" class="bg-white rounded-xl shadow p-4 flex flex-col justify-between">
+      <h3>{{ p.cropName }}</h3>
+      <p>₹{{ p.price }} / kg</p>
+      <p>Available: {{ p.quantity }} kg</p>
+      <p>Grade: {{ p.qualityGrade }}</p>
+<button (click)="buyNow(p)" style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px;">
+  Buy Now
+</button>
 
-      <div class="relative h-40 mb-3">
-        <img [src]="getImageUrl(p.cropImageUrl)" (error)="onImageError($event)"
-          class="h-full w-full object-cover rounded-lg" />
-      </div>
-
-      <div>
-        <h2 class="text-lg font-semibold">{{ p.cropName }}</h2>
-        <p class="text-sm text-gray-500">Farmer: {{ p.farmerId }}</p>
-
-        <p class="mt-1 text-xl font-bold text-green-700">
-          ₹{{ p.price }} / kg
-        </p>
-
-        <p class="text-sm text-gray-500">
-          Available: {{ p.quantity }} kg
-        </p>
-
-        <span class="inline-block mt-1 text-xs bg-green-50 text-green-700 px-2 py-0.5 rounded-full">
-          Grade {{ p.qualityGrade }}
-        </span>
-      </div>
-
-      <div class="mt-4 space-y-2">
-        <button class="w-full border border-green-600 text-green-600 py-2 rounded" (click)="buyNow(p)">
-          Buy Now
-        </button>
-
-        <button class="w-full text-sm text-gray-500 hover:text-green-700" (click)="openTrace(p.batchId)">
-          🌱 Trace Origin
-        </button>
-      </div>
+      <button class="cart-btn" (click)="addToCart(p)"  style="background-color: orange; color: white;">🛒 Add to Cart</button>
+      <button class="trace-btn" (click)="openTrace(p.traceUrl)">🌱 Trace Origin</button>
     </div>
   </div>
 </div>
 
-<div
-  *ngIf="showTrace"
-  class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50"
->
-  <div class="bg-white rounded-xl p-6 w-full max-w-md relative">
+<!-- CHECKOUT MODAL -->
+<div class="modal-backdrop" *ngIf="selectedProduct">
+  <div class="modal-card">
+    <form [formGroup]="checkoutForm" class="checkout-form">
 
-    <button
-      class="absolute top-2 right-3 text-gray-500"
-      (click)="closeTrace()"
-    >
-      ✕
-    </button>
+      <h2>🛒 Checkout</h2>
 
-    <!-- HEADER WITH REFRESH -->
-    <div class="flex items-center justify-between mb-3">
-      <h3 class="text-lg font-semibold">
-        Traceability
-      </h3>
+      <div class="field">
+        <label>Quantity (kg)</label>
+        <input type="number" formControlName="quantity" placeholder="Enter quantity" />
+      </div>
 
-      <button
-        type="button"
-        title="Reload trace"
-        (click)="reloadTrace()"
-        class="flex items-center justify-center
-               w-8 h-8 rounded-full
-               border border-gray-300
-               text-gray-600
-               hover:bg-gray-100
-               hover:text-gray-800
-               transition"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="w-4 h-4"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          stroke-width="2"
+      <div class="field">
+        <label>Delivery Address</label>
+        <textarea formControlName="address" placeholder="Enter delivery address"></textarea>
+      </div>
+
+      <div class="field">
+        <label>Mobile Number</label>
+        <input type="text" formControlName="contact" placeholder="10-digit mobile number" />
+      </div>
+
+      <div class="total">
+        Total Amount:
+        <span>₹{{ (checkoutForm.value?.quantity ?? 0) * (selectedProduct?.price ?? 0) }}</span>
+      </div>
+
+      <div class="actions">
+        <button
+          type="button"
+          class="btn primary"
+          (click)="placeOrder()"
+          [disabled]="checkoutForm.invalid"
         >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M4 4v6h6M20 20v-6h-6M5 19a9 9 0 0014-5M19 5a9 9 0 00-14 5"
-          />
-        </svg>
-      </button>
-    </div>
+          Place Order
+        </button>
 
-    <app-trace-preview
-      *ngIf="activeBatchId"
-      [batchId]="activeBatchId"
-      [attr.data-key]="traceRenderKey">
-    </app-trace-preview>
+        <button type="button" class="btn secondary" (click)="closeCheckout()">
+          Cancel
+        </button>
+      </div>
 
+    </form>
   </div>
 </div>
-

@@ -26,14 +26,18 @@ import { TracePreviewComponent } from '../components/trace-preview/trace-preview
 export class FarmerDashboardComponent implements OnInit {
 
   crops: any[] = [];
+  orders: any[] = [];
   loading = true;
+
+  // ✅ REVENUE
+  totalRevenue = 0;
 
   // modals
   showListingModal = false;
   showAddCropModal = false;
   showBatchManagement = false;
 
-  // TRACE MODAL (🔥 SAME AS MARKETPLACE)
+  // TRACE MODAL
   showTrace = false;
   activeBatchId: string | null = null;
   traceRenderKey = 0;
@@ -48,6 +52,7 @@ export class FarmerDashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.fetchCrops();
+    this.fetchFarmerRevenue(); // ✅ ADDED
   }
 
   /* ---------------- FETCH CROPS ---------------- */
@@ -88,6 +93,34 @@ export class FarmerDashboardComponent implements OnInit {
     });
   }
 
+  /* ---------------- FETCH REVENUE ---------------- */
+
+  fetchFarmerRevenue(): void {
+    const farmerId = this.auth.user?.id;
+    if (!farmerId) return;
+
+    this.http
+      .get<any[]>(`http://localhost:8080/api/orders/farmer/${farmerId}`)
+      .subscribe({
+        next: (orders) => {
+          this.orders = orders ?? [];
+
+          const deliveredOrders = this.orders.filter(
+            o => o.status === 'DELIVERED'
+          );
+
+          this.totalRevenue = deliveredOrders.reduce(
+            (sum, order) => sum + (order.totalAmount || 0) + (order.farmerProfit || 0),
+            0
+          );
+        },
+        error: (err) => {
+          console.error('Failed to fetch revenue', err);
+          this.totalRevenue = 0;
+        }
+      });
+  }
+
   /* ---------------- COMPUTED ---------------- */
 
   get totalProducts(): number {
@@ -119,28 +152,15 @@ export class FarmerDashboardComponent implements OnInit {
     this.fetchCrops();
   }
 
-  /* ---------------- TRACE (🔥 SAME LOGIC) ---------------- */
+  /* ---------------- TRACE ---------------- */
 
-  openTrace(batchId?: string) {
-    if (!batchId) return;
+ openTrace(batchId?: string) {
+  if (!batchId) return;
 
-    this.activeBatchId = batchId;
-    this.showTrace = true;
+  const traceUrl = `http://localhost:4200/trace/${batchId}`;
+  window.open(traceUrl, '_blank');
+}
 
-    // 🔥 force second render
-    setTimeout(() => {
-      this.traceRenderKey++;
-    });
-  }
-
-  closeTrace() {
-    this.showTrace = false;
-    this.activeBatchId = null;
-  }
-
-  reloadTrace() {
-    this.traceRenderKey = this.traceRenderKey + 1;
-  }
 
   /* ---------------- HELPERS ---------------- */
 

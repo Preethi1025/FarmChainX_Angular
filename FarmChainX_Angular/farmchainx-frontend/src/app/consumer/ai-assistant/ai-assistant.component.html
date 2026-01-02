@@ -1,94 +1,111 @@
-<div class="min-h-screen bg-gray-50 p-4">
-  <div class="max-w-4xl mx-auto">
-    
-    <!-- Header -->
-    <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
-      <div class="flex items-center gap-4 mb-4">
-        <div class="bg-green-500 text-white p-3 rounded-lg">
-          <span class="text-2xl">🤖</span>
+<div class="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-white p-6">
+  <div class="max-w-4xl mx-auto space-y-6">
+
+    <!-- HERO HEADER -->
+    <div class="bg-white/80 backdrop-blur rounded-2xl shadow-xl p-8 border border-green-100">
+      <div class="flex items-center gap-5 mb-6">
+        <div class="bg-gradient-to-br from-green-500 to-emerald-600 text-white p-4 rounded-2xl shadow-lg animate-pulse">
+          <span class="text-3xl">🤖</span>
         </div>
         <div>
-          <h1 class="text-2xl font-bold text-gray-900">Farm AI Assistant</h1>
-          <p class="text-gray-600">Get instant agricultural information</p>
+          <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">
+            Farm AI Assistant
+          </h1>
+          <p class="text-gray-600 mt-1">
+            Smart agricultural insights powered by AI
+          </p>
         </div>
       </div>
-      
-      <!-- Search Form -->
-      <form [formGroup]="cropForm" (ngSubmit)="onSubmit()" class="mb-6">
+
+      <!-- SEARCH -->
+      <form [formGroup]="cropForm" (ngSubmit)="onSubmit()" class="mb-8">
         <div class="flex gap-3">
           <input
             type="text"
             formControlName="cropName"
-            placeholder="Enter crop name (e.g., Wheat, Rice, Tomato...)"
-            class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            placeholder="🌾 Enter crop name (Wheat, Rice, Tomato...)"
+            class="flex-1 px-5 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition"
             (keydown.enter)="$event.preventDefault(); onSubmit()"
           >
           <button
             type="submit"
             [disabled]="loading || cropForm.invalid"
-            class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-8 py-4 rounded-xl font-semibold shadow-lg hover:scale-105 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {{ loading ? 'Searching...' : 'Search' }}
+            {{ loading ? 'Thinking...' : 'Ask AI' }}
           </button>
         </div>
       </form>
-      
-      <!-- Example Crops -->
-      <div class="mb-6">
-        <h3 class="font-semibold text-gray-900 mb-3">Try these:</h3>
-        <div class="flex flex-wrap gap-2">
+
+      <!-- QUICK SUGGESTIONS -->
+      <div>
+        <h3 class="font-semibold text-gray-900 mb-3">🌱 Popular Crops</h3>
+        <div class="flex flex-wrap gap-3">
           <button
             *ngFor="let crop of exampleCrops"
             (click)="selectExampleCrop(crop.name)"
             [disabled]="loading"
-            class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center gap-2 disabled:opacity-50"
+            class="px-4 py-2 bg-white border border-gray-200 hover:border-green-400 hover:bg-green-50 rounded-full flex items-center gap-2 shadow-sm transition disabled:opacity-50"
           >
             <span>{{ crop.emoji }}</span>
-            <span>{{ crop.name }}</span>
+            <span class="font-medium">{{ crop.name }}</span>
           </button>
         </div>
       </div>
     </div>
-    
-    <!-- Error Message -->
-    <div *ngIf="error" class="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
-      <div class="text-red-700">{{ error }}</div>
+
+    <!-- ERROR -->
+    <div *ngIf="error" class="bg-gradient-to-r from-red-50 to-red-100 border border-red-200 rounded-xl p-5 shadow">
+      <div class="text-red-700 font-medium">❌ {{ error }}</div>
     </div>
-    
-    <!-- Results -->
-    <div *ngIf="response" class="bg-white rounded-xl shadow-lg p-6">
-      <div class="flex justify-between items-center mb-6">
+
+    <!-- AI RESPONSE -->
+    <div *ngIf="response" class="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+
+      <div class="flex justify-between items-start mb-6">
         <div>
-          <h2 class="text-xl font-bold text-gray-900">{{ response.cropName }}</h2>
-          <div class="mt-1">
-            <span [class]="response.success ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'"
-                  class="px-2 py-1 text-xs rounded-full">
-              {{ response.success ? 'Real AI Data' : 'Mock Data' }}
-            </span>
+          <h2 class="text-2xl font-bold text-gray-900">
+            🌾 {{ response.cropName }}
+          </h2>
+          <span
+            class="inline-block mt-2 px-3 py-1 text-xs rounded-full font-semibold"
+            [ngClass]="response.success 
+              ? 'bg-green-100 text-green-800' 
+              : 'bg-yellow-100 text-yellow-800'">
+            {{ response.success ? 'AI Generated Insights' : 'Fallback Information' }}
+          </span>
+        </div>
+      </div>
+
+      <!-- DATA GRID -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div
+          *ngFor="let item of response.data | keyvalue"
+          class="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-xl p-5 hover:shadow-md transition"
+        >
+          <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">
+            {{ item.key }}
+          </div>
+          <div class="mt-2 text-gray-900 font-medium">
+            {{ item.value }}
           </div>
         </div>
       </div>
-      
-      <!-- Data Display -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div *ngFor="let item of response.data | keyvalue" class="bg-gray-50 p-4 rounded-lg">
-          <div class="text-sm font-medium text-gray-500">{{ item.key }}</div>
-          <div class="mt-1 text-gray-900">{{ item.value }}</div>
-        </div>
-      </div>
-      
-      <!-- Debug Info -->
-      <div class="mt-6 pt-6 border-t border-gray-200 text-sm text-gray-500">
-        <div>Status: {{ response.success ? '✅ Connected to AI' : '⚠️ Using fallback' }}</div>
-        <div>Message: {{ response.message }}</div>
+
+      <!-- FOOTER -->
+      <div class="mt-8 pt-6 border-t text-sm text-gray-500 flex flex-col gap-1">
+        <div>🔗 Status: {{ response.success ? 'Connected to AI Engine' : 'Using Offline Knowledge' }}</div>
+        <div>💬 Message: {{ response.message }}</div>
       </div>
     </div>
-    
-    <!-- Loading State -->
-    <div *ngIf="loading" class="bg-white rounded-xl shadow-lg p-6 text-center">
-      <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
-      <p class="mt-3 text-gray-600">Asking AI about your crop...</p>
+
+    <!-- LOADING -->
+    <div *ngIf="loading" class="bg-white rounded-2xl shadow-xl p-8 text-center">
+      <div class="mx-auto animate-spin rounded-full h-10 w-10 border-4 border-green-600 border-t-transparent"></div>
+      <p class="mt-4 text-gray-600 font-medium">
+        AI is analyzing your crop...
+      </p>
     </div>
-    
+
   </div>
 </div>

@@ -7,7 +7,7 @@ import { TracePreviewComponent } from '../trace-preview/trace-preview.component'
 @Component({
   selector: 'app-batch-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, TracePreviewComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './batch-management.component.html'
 })
 export class BatchManagementComponent implements OnInit {

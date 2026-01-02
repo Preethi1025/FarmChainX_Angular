@@ -1,0 +1,117 @@
+/* ================= Info Cards ================= */
+.info-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem; /* 5 Tailwind spacing */
+  margin-bottom: 2rem;
+}
+
+.info-card {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb; /* gray-200 */
+  border-radius: 1rem; /* rounded-xl */
+  padding: 1.25rem; /* p-5 */
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05); /* shadow-md */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.info-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 12px rgba(0,0,0,0.1);
+}
+
+.icon-wrapper {
+  padding: 0.75rem; /* p-3 */
+  border-radius: 9999px; /* rounded-full */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Example icon colors (you can override per status) */
+.icon-green { background-color: #d1fae5; color: #047857; }
+.icon-yellow { background-color: #fef9c3; color: #b45309; }
+.icon-purple { background-color: #ede9fe; color: #7c3aed; }
+
+/* Info Card Text */
+.info-card-text p:first-child {
+  font-size: 0.75rem; /* text-xs */
+  color: #6b7280; /* gray-500 */
+  margin: 0;
+}
+
+.info-card-text p:last-child {
+  font-size: 1.125rem; /* text-lg */
+  font-weight: 600;
+  margin: 0;
+}
+
+/* ================= Timeline ================= */
+.timeline {
+  position: relative;
+  border-left: 4px solid #34d399; /* green-300 */
+  margin-left: 1.5rem; /* same as -left-6 for alignment */
+  padding-left: 1rem;
+}
+
+.timeline-step {
+  position: relative;
+  margin-bottom: 2.5rem; /* mb-10 */
+}
+
+.timeline-bullet {
+  position: absolute;
+  left: -2.25rem; /* aligns with border-left */
+  top: 0;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  font-size: 1rem;
+}
+
+/* Status Colors for Timeline Bullets */
+.bullet-planted { background-color: #d1fae5; color: #047857; }  /* green-100 / green-700 */
+.bullet-growing { background-color: #dbeafe; color: #1d4ed8; } /* blue-100 / blue-700 */
+.bullet-ready_for_harvest { background-color: #fef3c7; color: #b45309; } /* yellow-100 / yellow-700 */
+.bullet-harvested { background-color: #bbf7d0; color: #065f46; } /* green-200 / green-800 */
+.bullet-listed { background-color: #ede9fe; color: #6d28d9; } /* purple-100 / purple-700 */
+.bullet-sold { background-color: #e5e7eb; color: #374151; } /* gray-200 / gray-700 */
+
+/* Timeline Card */
+.timeline-card {
+  background-color: #ffffff;
+  border: 1px solid #f3f4f6; /* gray-100 */
+  border-radius: 1rem; /* rounded-xl */
+  padding: 1.25rem; /* p-5 */
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.timeline-card h3 {
+  font-weight: 600;
+  font-size: 1rem;
+  text-transform: capitalize;
+  color: #111827; /* gray-900 */
+  margin: 0;
+}
+
+.timeline-card span {
+  font-size: 0.75rem;
+  color: #6b7280; /* gray-500 */
+}
+
+.timeline-card p {
+  font-size: 0.875rem;
+  color: #4b5563; /* gray-600 */
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}

@@ -6,8 +6,11 @@
   <div class="grid md:grid-cols-3 gap-4 mb-6">
     <div class="bg-white p-4 rounded-xl shadow border">
       <p class="text-sm text-gray-500">Total Distributor Earnings</p>
-      <p class="text-2xl font-bold text-green-700">₹{{ totalDistributorEarnings }}</p>
+      <p class="text-2xl font-bold text-green-700">
+  ₹{{ totalDistributorEarnings / 10 | number:'1.2-2' }}
+</p>
     </div>
+    
 
     <div class="bg-white p-4 rounded-xl shadow border">
       <p class="text-sm text-gray-500">Live Orders</p>
@@ -86,7 +89,15 @@
         <p class="font-medium">{{ order.cropName }}</p>
         <p>Quantity: {{ order.quantity }} kg</p>
         <p>Total: ₹{{ order.totalAmount }}</p>
+        <p>
+  📍 Delivery Address:
+  <span>{{ order.deliveryAddress || 'Not provided' }}</span>
+</p>
 
+<p>
+  📞 Mobile:
+  <span>{{ order.contactNumber || 'Not provided' }}</span>
+</p>
         <!-- Actions -->
         <div class="flex flex-wrap gap-2 mt-4">
           <button class="bg-yellow-500 text-white px-3 py-1 rounded"

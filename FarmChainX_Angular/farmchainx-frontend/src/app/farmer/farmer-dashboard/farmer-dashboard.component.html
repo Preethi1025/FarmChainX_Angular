@@ -13,8 +13,11 @@
     </div>
 
     <div class="bg-white rounded-lg shadow p-4">
-      <h3 class="text-sm font-medium text-gray-500">Total Revenue</h3>
-      <p class="text-2xl font-bold text-gray-900">--</p>
+      <h3 class="text-sm font-medium text-gray-500"> Total Revenue</h3>
+      <p class="text-2xl font-bold text-green-700">
+  ₹{{ totalRevenue  | number:'1.2-2' }}
+</p>
+
     </div>
   </div>
 
@@ -22,21 +25,21 @@
   <div class="flex gap-3 mb-6 flex-wrap">
     <button
       (click)="showAddCropModal = true"
-      class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+      class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
       + Add New Crop
     </button>
 
     <button
       (click)="showBatchManagement = true"
-      class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+      class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
       🧺 Manage Batches
     </button>
 
-    <button
+    <!-- <button
       [routerLink]="['/marketplace']"
       class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
       Browse Marketplace
-    </button>
+    </button> -->
   </div>
 
   <!-- ================= CROPS GRID ================= -->
@@ -83,7 +86,7 @@
 
           <!-- ✅ TRACE BUTTON (CORRECT PLACE) -->
           <button
-            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
             (click)="openTrace(crop.batchId)">
             Trace
           </button>
@@ -125,11 +128,11 @@
   <div class="bg-white rounded-xl p-6 w-full max-w-md relative">
 
     <!-- CLOSE -->
-    <button
+    <!-- <button
       class="absolute top-2 right-3 text-gray-500 hover:text-gray-700"
       (click)="closeTrace()">
       ✕
-    </button>
+    </button> -->
 
     <!-- HEADER -->
     <div class="flex items-center justify-between mb-3">
@@ -138,7 +141,7 @@
       </h3>
 
       <!-- REFRESH -->
-      <button
+      <!-- <button
         type="button"
         title="Reload trace"
         (click)="reloadTrace()"
@@ -159,7 +162,7 @@
                 stroke-linejoin="round"
                 d="M4 4v6h6M20 20v-6h-6M5 19a9 9 0 0014-5M19 5a9 9 0 00-14 5"/>
         </svg>
-      </button>
+      </button> -->
     </div>
 
     <!-- TRACE PREVIEW -->

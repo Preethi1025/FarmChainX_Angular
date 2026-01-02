@@ -70,9 +70,10 @@ export class DistributorDashboardComponent implements OnInit {
       });
   }
 
-  goToTrace(batchId: string): void {
-    this.router.navigate(['/trace', batchId]);
-  }
+ goToTrace(batchId: string): void {
+  window.open(`http://localhost:4200/trace/${batchId}`, '_blank');
+}
+
 
   /* ---------------- ORDERS ---------------- */
 

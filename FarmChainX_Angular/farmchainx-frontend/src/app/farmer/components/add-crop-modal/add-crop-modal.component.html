@@ -46,11 +46,30 @@
           <option *ngFor="let c of cropTypes" [value]="c">{{ c }}</option>
         </select>
 
-        <input type="date" class="w-full border p-2 rounded"
-               [(ngModel)]="form.sowDate" />
+        <!-- Sowing Date -->
+<div class="flex flex-col gap-1">
+  <label class="text-sm font-medium text-gray-700">
+    🌱 Sowing Date
+  </label>
+  <input
+    type="date"
+    class="w-full border p-2 rounded focus:ring-2 focus:ring-green-500 focus:outline-none"
+    [(ngModel)]="form.sowDate"
+  />
+</div>
 
-        <input type="date" class="w-full border p-2 rounded"
-               [(ngModel)]="form.expectedHarvestDate" />
+<!-- Expected Harvest Date -->
+<div class="flex flex-col gap-1 mt-3">
+  <label class="text-sm font-medium text-gray-700">
+    🌾 Expected Harvest Date
+  </label>
+  <input
+    type="date"
+    class="w-full border p-2 rounded focus:ring-2 focus:ring-green-500 focus:outline-none"
+    [(ngModel)]="form.expectedHarvestDate"
+  />
+</div>
+
 
         <input class="w-full border p-2 rounded"
                placeholder="Location"
@@ -72,7 +91,7 @@
         <div class="grid grid-cols-2 gap-3">
           <input type="number"
                  class="border p-2 rounded"
-                 placeholder="Price (₹)"
+                 placeholder="Price (₹)/kg"
                  [(ngModel)]="form.price" />
 
           <input type="number"

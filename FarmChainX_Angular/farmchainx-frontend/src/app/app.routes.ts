@@ -4,34 +4,29 @@ import { AuthGuard } from './core/guards/auth.guard';
 /* =======================
    APP ROUTES
 ======================= */
-
 export const routes: Routes = [
 
   /* =======================
      PUBLIC ROUTES
   ======================= */
-
   {
     path: '',
     loadComponent: () =>
       import('./home/home.component')
         .then(m => m.HomeComponent)
   },
-
   {
     path: 'login',
     loadComponent: () =>
       import('./auth/login.component')
         .then(m => m.LoginComponent)
   },
-
   {
     path: 'register',
     loadComponent: () =>
       import('./auth/register.component')
         .then(m => m.RegisterComponent)
   },
-
   {
     path: 'marketplace',
     loadComponent: () =>
@@ -39,25 +34,31 @@ export const routes: Routes = [
         .then(m => m.MarketplaceComponent)
   },
 
+  /* =======================
+     TRACEABILITY ROUTE
+  ======================= */
+  {
+    path: 'trace/:batchId',
+    loadComponent: () =>
+      import('./features/traceability/traceability.component')
+        .then(m => m.TraceabilityComponent)
+  },
 
   /* =======================
      SUPPORT & LEGAL
   ======================= */
-
   {
     path: 'help-center',
     loadComponent: () =>
       import('./pages/help-center/help-center.component')
         .then(m => m.HelpCenterComponent)
   },
-
   {
     path: 'privacy-policy',
     loadComponent: () =>
       import('./pages/legal/privacy-policy.component')
         .then(m => m.PrivacyPolicyComponent)
   },
-
   {
     path: 'terms-conditions',
     loadComponent: () =>
@@ -66,9 +67,8 @@ export const routes: Routes = [
   },
 
   /* =======================
-     FARMER
+     FARMER ROUTES
   ======================= */
-
   {
     path: 'farmer',
     canActivate: [AuthGuard],
@@ -94,9 +94,8 @@ export const routes: Routes = [
   },
 
   /* =======================
-     CONSUMER
+     CONSUMER ROUTES
   ======================= */
-
   {
     path: 'consumer',
     canActivate: [AuthGuard],
@@ -128,9 +127,8 @@ export const routes: Routes = [
   },
 
   /* =======================
-     DISTRIBUTOR
+     DISTRIBUTOR ROUTES
   ======================= */
-
   {
     path: 'distributor',
     canActivate: [AuthGuard],
@@ -150,9 +148,8 @@ export const routes: Routes = [
   },
 
   /* =======================
-     ADMIN (✅ FIXED)
+     ADMIN ROUTES
   ======================= */
-
   {
     path: 'admin',
     canActivate: [AuthGuard],
@@ -196,8 +193,7 @@ export const routes: Routes = [
   },
 
   /* =======================
-     FALLBACK
+     FALLBACK ROUTE
   ======================= */
-
   { path: '**', redirectTo: '' }
 ];
