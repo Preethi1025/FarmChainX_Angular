@@ -1,0 +1,114 @@
+<div *ngIf="loading" class="loading">
+  Loading Marketplace...
+</div>
+
+<div *ngIf="!loading">
+
+  <h1>🌾 Marketplace</h1>
+  <p>Buy fresh products directly from farmers</p>
+
+  <!-- FILTER BAR -->
+  <!-- FILTER BAR -->
+<div class="filters">
+  <input
+    type="text"
+    placeholder="Search crop..."
+    [value]="search"
+    (input)="search=$any($event.target).value; applyFilters()"
+    class="filter-input"
+  />
+
+  <input
+    type="number"
+    placeholder="Min ₹"
+    [value]="minPrice"
+    (input)="minPrice=$any($event.target).valueAsNumber; applyFilters()"
+    class="filter-input"
+  />
+
+  <input
+    type="number"
+    placeholder="Max ₹"
+    [value]="maxPrice"
+    (input)="maxPrice=$any($event.target).valueAsNumber; applyFilters()"
+    class="filter-input"
+  />
+
+  <select
+    [value]="sortBy"
+    (change)="sortBy=$any($event.target).value; applyFilters()"
+    class="filter-input"
+  >
+    <option value="">Sort</option>
+    <option value="PRICE_ASC">Price ↑</option>
+    <option value="PRICE_DESC">Price ↓</option>
+    <option value="QTY_ASC">Qty ↑</option>
+    <option value="QTY_DESC">Qty ↓</option>
+  </select>
+</div>
+
+
+  <!-- PRODUCTS GRID -->
+  <div class="grid">
+    <div class="card" *ngFor="let p of filteredProducts">
+      <img [src]="p.cropImageUrl" [alt]="p.cropName" />
+
+      <h3>{{ p.cropName }}</h3>
+      <p>₹{{ p.price }} / kg</p>
+      <p>Available: {{ p.quantity }} kg</p>
+      <p>Grade: {{ p.qualityGrade }}</p>
+<button (click)="buyNow(p)" style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px;">
+  Buy Now
+</button>
+
+      <button class="cart-btn" (click)="addToCart(p)"  style="background-color: orange; color: white;">🛒 Add to Cart</button>
+      <button class="trace-btn" (click)="openTrace(p.traceUrl)">🌱 Trace Origin</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHECKOUT MODAL -->
+<div class="modal-backdrop" *ngIf="selectedProduct">
+  <div class="modal-card">
+    <form [formGroup]="checkoutForm" class="checkout-form">
+
+      <h2>🛒 Checkout</h2>
+
+      <div class="field">
+        <label>Quantity (kg)</label>
+        <input type="number" formControlName="quantity" placeholder="Enter quantity" />
+      </div>
+
+      <div class="field">
+        <label>Delivery Address</label>
+        <textarea formControlName="address" placeholder="Enter delivery address"></textarea>
+      </div>
+
+      <div class="field">
+        <label>Mobile Number</label>
+        <input type="text" formControlName="contact" placeholder="10-digit mobile number" />
+      </div>
+
+      <div class="total">
+        Total Amount:
+        <span>₹{{ (checkoutForm.value?.quantity ?? 0) * (selectedProduct?.price ?? 0) }}</span>
+      </div>
+
+      <div class="actions">
+        <button
+          type="button"
+          class="btn primary"
+          (click)="placeOrder()"
+          [disabled]="checkoutForm.invalid"
+        >
+          Place Order
+        </button>
+
+        <button type="button" class="btn secondary" (click)="closeCheckout()">
+          Cancel
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>

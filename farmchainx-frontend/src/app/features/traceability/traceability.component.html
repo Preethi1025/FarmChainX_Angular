@@ -1,0 +1,87 @@
+<div class="min-h-screen bg-gray-50 py-10">
+  <div class="max-w-4xl mx-auto px-4">
+
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-green-600 to-green-400 text-white rounded-2xl p-6 shadow-lg mb-8">
+      <h1 class="text-3xl font-bold">Batch Traceability</h1>
+      <p class="text-sm opacity-80 mt-1 tracking-wide">
+        Batch ID: <span class="font-semibold">{{ batchId }}</span>
+      </p>
+    </div>
+
+    <!-- Info Cards -->
+    <div class="grid md:grid-cols-3 gap-5 mb-8">
+
+      <!-- Farmer -->
+      <div class="bg-white shadow-md rounded-xl p-5 flex items-center space-x-4 border border-gray-200">
+        <div class="p-3 bg-green-100 rounded-full">
+          <span class="text-green-700 text-xl">👨‍🌾</span>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500">Farmer ID</p>
+          <p class="text-lg font-semibold">{{ farmerId }}</p>
+        </div>
+      </div>
+
+      <!-- Crop -->
+      <div class="bg-white shadow-md rounded-xl p-5 flex items-center space-x-4 border border-gray-200">
+        <div class="p-3 bg-yellow-100 rounded-full">
+          <span class="text-yellow-700 text-xl">🌱</span>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500">Crop Type</p>
+          <p class="text-lg font-semibold">{{ cropName }}</p>
+        </div>
+      </div>
+
+      <!-- Distributor -->
+      <div class="bg-white shadow-md rounded-xl p-5 flex items-center space-x-4 border border-gray-200">
+        <div class="p-3 bg-purple-100 rounded-full">
+          <span class="text-purple-700 text-xl">📦</span>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500">Distributor ID</p>
+          <p class="text-lg font-semibold">{{ distributorId }}</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="loading" class="text-center py-10 text-lg">Loading...</div>
+
+    <!-- Timeline -->
+    <div *ngIf="!loading" class="relative border-l-4 border-green-300 ml-6">
+      <div *ngFor="let step of trace; let i = index" class="mb-10 ml-6 relative">
+
+        <!-- Timeline Bullet -->
+        <div
+          class="absolute -left-9 top-0 p-3 rounded-full shadow"
+          [attr.class]="'absolute -left-9 top-0 p-3 rounded-full shadow ' + getStatusBullet(step.status).classes"
+        >
+          <span class="text-sm">{{ getStatusBullet(step.status).emoji }}</span>
+        </div>
+
+        <!-- Timeline Card -->
+        <div class="bg-white p-5 rounded-xl shadow-md border border-gray-100">
+          <div class="flex justify-between items-center">
+            <h3 class="font-semibold capitalize text-gray-800">{{ step.status.replace(/_/g,' ') }}</h3>
+            <span class="text-xs text-gray-500 font-medium">{{ formatDateTime(step.timestamp) }}</span>
+          </div>
+
+          <p *ngIf="step.changedBy" class="text-sm text-gray-600 mt-2">
+            👤 Updated by: {{ step.changedBy }}
+          </p>
+
+          <p *ngIf="step.location" class="text-sm text-gray-600 mt-1 flex items-center">
+            📍 {{ step.location }}
+          </p>
+
+          <p *ngIf="step.remarks" class="text-sm text-gray-600 mt-2">{{ step.remarks }}</p>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>

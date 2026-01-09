@@ -1,0 +1,75 @@
+<div *ngIf="batch && batch.status !== 'DELETED' && batch.status !== 'EMPTY'" 
+     class="p-5 rounded-2xl shadow-lg bg-white border border-gray-200 hover:shadow-xl transition-all duration-200 overflow-hidden">
+
+  <!-- IMAGE SECTION -->
+  <div class="relative mb-3 rounded-xl overflow-hidden h-40">
+    <img [src]="imageUrl"
+         [alt]="batch.cropType || 'Crop'"
+         class="w-full h-full object-cover hover:scale-105 transition duration-500"
+         (error)="onImageError($event)" />
+
+    <span class="absolute top-3 right-3 bg-yellow-100 text-yellow-700 text-xs px-3 py-1 rounded-full shadow">
+      {{ batch.status }}
+    </span>
+
+    <div class="absolute bottom-3 left-3 bg-black/50 text-white px-3 py-1 rounded-lg text-sm flex items-center gap-2">
+      <i-lucide name="leaf" size="16"></i-lucide>
+      {{ batch.cropType || 'Unknown Crop' }}
+    </div>
+  </div>
+
+  <!-- BASIC INFO -->
+  <div class="space-y-2 text-sm text-gray-700">
+    <p class="flex items-center gap-2">
+      <i-lucide name="scale" size="16" class="text-green-600"></i-lucide>
+      <strong>{{ batch.totalQuantity || 0 }} kg</strong>
+    </p>
+
+    <p class="flex items-center gap-2">
+      <i-lucide name="indian-rupee" size="16" class="text-green-700"></i-lucide>
+      <strong>
+        {{ batch.price && batch.price > 0 ? '₹' + batch.price + ' / kg' : 'Price not set' }}
+      </strong>
+    </p>
+
+    <p *ngIf="batch.listingQuantity != null" class="flex items-center gap-2">
+      <i-lucide name="package-check" size="16" class="text-teal-600"></i-lucide>
+      Listing Qty: <strong>{{ batch.listingQuantity }} kg</strong>
+    </p>
+
+    <p class="flex items-center gap-2">
+      <i-lucide name="user" size="16" class="text-blue-600"></i-lucide>
+      Farmer: <strong>{{ batch.farmerName || batch.farmerId || 'N/A' }}</strong>
+    </p>
+
+    <p class="flex items-center gap-2">
+      <i-lucide name="map-pin" size="16" class="text-purple-600"></i-lucide>
+      Location: <strong>{{ batch.location || 'N/A' }}</strong>
+    </p>
+
+    <p class="flex items-center gap-2">
+      <i-lucide name="star" size="16" class="text-yellow-500"></i-lucide>
+      Quality Score: 
+      <strong>{{ batch.avgQualityScore != null ? (batch.avgQualityScore | number:'1.1-1') + '%' : 'Not Available' }}</strong>
+    </p>
+
+    <p *ngIf="batch.certification" class="flex items-center gap-2">
+      <i-lucide name="badge-check" size="16" class="text-indigo-600"></i-lucide>
+      Certification: <strong>{{ batch.certification }}</strong>
+    </p>
+  </div>
+
+  <!-- ACTION BUTTONS -->
+  <div class="mt-4 flex gap-3 flex-wrap">
+    <button *ngIf="!readOnly"
+            class="px-4 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition"
+            (click)="emitApprove()">Approve</button>
+
+    <button *ngIf="!readOnly"
+            class="px-4 py-2 bg-red-500 text-white rounded-lg shadow hover:bg-red-600 transition"
+            (click)="emitReject()">Reject</button>
+
+    <button class="px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition"
+            (click)="emitTrace()">Trace</button>
+  </div>
+</div>

@@ -1,0 +1,176 @@
+<div class="p-6">
+
+  <!-- ================= STATS ================= -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div class="bg-white rounded-lg shadow p-4">
+      <h3 class="text-sm font-medium text-gray-500">Total Products</h3>
+      <p class="text-2xl font-bold text-gray-900">{{ totalProducts }}</p>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-4">
+      <h3 class="text-sm font-medium text-gray-500">Active Listings</h3>
+      <p class="text-2xl font-bold text-gray-900">{{ activeListingsCount }}</p>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-4">
+      <h3 class="text-sm font-medium text-gray-500"> Total Revenue</h3>
+      <p class="text-2xl font-bold text-green-700">
+  ₹{{ totalRevenue  | number:'1.2-2' }}
+</p>
+
+    </div>
+  </div>
+
+  <!-- ================= ACTION BUTTONS ================= -->
+  <div class="flex gap-3 mb-6 flex-wrap">
+    <button
+      (click)="showAddCropModal = true"
+      class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+      + Add New Crop
+    </button>
+
+    <button
+      (click)="showBatchManagement = true"
+      class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+      🧺 Manage Batches
+    </button>
+
+    <!-- <button
+      [routerLink]="['/marketplace']"
+      class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+      Browse Marketplace
+    </button> -->
+  </div>
+
+  <!-- ================= CROPS GRID ================= -->
+  <div *ngIf="!loading && crops.length > 0"
+       class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+    @for (crop of crops; track trackByCropId($index, crop)) {
+
+      <div class="p-5 rounded-2xl shadow-lg bg-white border border-gray-200 hover:shadow-xl transition overflow-hidden">
+
+        <!-- IMAGE -->
+        <div class="relative mb-3 rounded-xl overflow-hidden h-40">
+          <img
+            [src]="getImageUrl(crop)"
+            [alt]="crop.cropName"
+            class="w-full h-full object-cover hover:scale-105 transition duration-500"
+            (error)="onImageError($event)" />
+
+          <span class="absolute top-3 right-3 bg-blue-100 text-blue-700 text-xs px-3 py-1 rounded-full shadow">
+            {{ crop.status || 'PLANTED' }}
+          </span>
+
+          <div class="absolute bottom-3 left-3 bg-black/50 text-white px-3 py-1 rounded-lg text-sm">
+            🌱 {{ crop.cropType }}
+          </div>
+        </div>
+
+        <!-- INFO -->
+        <div class="space-y-2 text-sm text-gray-700">
+          <p><strong>{{ crop.cropName }}</strong></p>
+          <p>📦 Quantity: <strong>{{ crop.quantity }} kg</strong></p>
+          <p>💰 Price: <strong>₹{{ crop.price }} / kg</strong></p>
+          <p>📍 Location: <strong>{{ crop.location }}</strong></p>
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="mt-4 flex gap-3 flex-wrap">
+          <button
+            *ngIf="!crop.listed"
+            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+            (click)="openListing(crop)">
+            List
+          </button>
+
+          <!-- ✅ TRACE BUTTON (CORRECT PLACE) -->
+          <button
+            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+            (click)="openTrace(crop.batchId)">
+            Trace
+          </button>
+        </div>
+
+      </div>
+    }
+  </div>
+
+  <!-- ================= OTHER MODALS ================= -->
+  @if (showListingModal) {
+    <app-listing-modal
+      [crop]="selectedCrop"
+      (close)="showListingModal = false"
+      (success)="onListingSuccess($event)" />
+  }
+
+  @if (showAddCropModal) {
+    <app-add-crop-modal
+      [farmerId]="auth.user.id"
+      (close)="showAddCropModal = false"
+      (cropAdded)="onCropAdded()" />
+  }
+
+  @if (showBatchManagement) {
+    <app-batch-management
+      [user]="auth.user"
+      (close)="showBatchManagement = false">
+    </app-batch-management>
+  }
+
+</div>
+
+<!-- ================= TRACE MODAL (ONLY ONCE) ================= -->
+<div
+  *ngIf="showTrace"
+  class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50"
+>
+  <div class="bg-white rounded-xl p-6 w-full max-w-md relative">
+
+    <!-- CLOSE -->
+    <!-- <button
+      class="absolute top-2 right-3 text-gray-500 hover:text-gray-700"
+      (click)="closeTrace()">
+      ✕
+    </button> -->
+
+    <!-- HEADER -->
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="text-lg font-semibold">
+        Traceability
+      </h3>
+
+      <!-- REFRESH -->
+      <!-- <button
+        type="button"
+        title="Reload trace"
+        (click)="reloadTrace()"
+        class="flex items-center justify-center
+               w-8 h-8 rounded-full
+               border border-gray-300
+               text-gray-600
+               hover:bg-gray-100
+               hover:text-gray-800
+               transition">
+        <svg xmlns="http://www.w3.org/2000/svg"
+             class="w-4 h-4"
+             fill="none"
+             viewBox="0 0 24 24"
+             stroke="currentColor"
+             stroke-width="2">
+          <path stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M4 4v6h6M20 20v-6h-6M5 19a9 9 0 0014-5M19 5a9 9 0 00-14 5"/>
+        </svg>
+      </button> -->
+    </div>
+
+    <!-- TRACE PREVIEW -->
+    <app-trace-preview
+      *ngIf="activeBatchId"
+      [batchId]="activeBatchId"
+      [attr.data-key]="traceRenderKey">
+    </app-trace-preview>
+
+  </div>
+</div>

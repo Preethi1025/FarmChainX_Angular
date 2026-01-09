@@ -1,0 +1,119 @@
+<div class="legal-doc-container bg-gradient-to-b from-gray-50 to-white min-h-screen py-12">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+
+    <!-- Back -->
+    <a routerLink="/" class="inline-flex items-center text-primary-600 hover:text-primary-700 mb-8">
+      ← Back to Home
+    </a>
+
+    <!-- Header -->
+    <div class="bg-white rounded-2xl shadow-lg p-8 mb-8">
+      <div class="flex justify-between items-center mb-6">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">Privacy Policy</h1>
+          <p class="text-gray-600 mt-1">Last Updated: {{ lastUpdated }}</p>
+        </div>
+      </div>
+
+      <div class="bg-blue-50 border-l-4 border-blue-400 p-4">
+        <p class="text-blue-700">
+          <strong>Transparency Commitment:</strong>
+          We believe in transparency not just in agriculture but also in how we handle your data.
+        </p>
+      </div>
+    </div>
+
+    <!-- Overview -->
+    <div class="bg-white rounded-2xl shadow-lg p-8">
+      <div class="mb-10 p-6 bg-gray-50 rounded-xl">
+        <h2 class="text-xl font-semibold mb-4">Quick Overview</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="bg-white p-4 rounded border">
+            <h3 class="font-medium">Data We Collect</h3>
+            <p class="text-sm text-gray-600">Information required for platform operations</p>
+          </div>
+
+          <div class="bg-white p-4 rounded border">
+            <h3 class="font-medium">How We Use It</h3>
+            <p class="text-sm text-gray-600">Security, transactions, traceability</p>
+          </div>
+
+          <div class="bg-white p-4 rounded border">
+            <h3 class="font-medium">Your Rights</h3>
+            <p class="text-sm text-gray-600">Access, update, delete data</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table of Contents -->
+      <div class="mb-10 p-6 bg-gray-50 rounded-xl">
+        <h2 class="text-xl font-semibold mb-4">Table of Contents</h2>
+        <ol class="list-decimal pl-5 space-y-2 text-primary-600">
+          <li><a href="#introduction">Introduction</a></li>
+          <li><a href="#data-collection">Information We Collect</a></li>
+          <li><a href="#data-use">How We Use Your Information</a></li>
+          <li><a href="#data-sharing">Information Sharing</a></li>
+          <li><a href="#data-protection">Data Security</a></li>
+          <li><a href="#data-retention">Data Retention</a></li>
+          <li><a href="#user-rights">Your Rights</a></li>
+          <li><a href="#international">International Transfers</a></li>
+          <li><a href="#children">Children's Privacy</a></li>
+          <li><a href="#changes">Policy Changes</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ol>
+      </div>
+
+      <!-- Sections -->
+
+      <section id="introduction" class="space-y-4">
+        <h2 class="text-2xl font-bold">1. Introduction</h2>
+        <p>
+          FarmChainX Technologies is committed to protecting your privacy.
+          This policy explains how we collect, use, and safeguard information.
+        </p>
+      </section>
+
+      <section id="data-collection" class="mt-10">
+        <h2 class="text-2xl font-bold mb-4">2. Information We Collect</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div *ngFor="let c of dataCategories" class="bg-gray-50 p-4 rounded">
+            <h4 class="font-medium">{{ c.name }}</h4>
+            <p class="text-sm text-gray-600">{{ c.examples }}</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="data-use" class="mt-10">
+        <h2 class="text-2xl font-bold mb-4">3. How We Use Your Information</h2>
+
+        <div class="space-y-3">
+          <div *ngFor="let p of purposes; index as i" class="flex items-start">
+            <span class="mr-3 font-bold">{{ i + 1 }}.</span>
+            <p>{{ p }}</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="contact" class="mt-12 bg-gray-50 p-6 rounded-lg">
+        <h2 class="text-2xl font-bold mb-4">Contact Us</h2>
+
+        <p>Email:
+          <a href="mailto:privacy@farmchainx.com" class="text-primary-600">
+            privacy@farmchainx.com
+          </a>
+        </p>
+
+        <p>Phone: +91 9686322533</p>
+        <p>Address: 28-1170/1, T Nagar, Chennai</p>
+      </section>
+
+      <!-- Footer -->
+      <div class="mt-12 pt-6 border-t text-center text-sm text-gray-500">
+        <p>© {{ lastUpdated }} FarmChainX Technologies Inc.</p>
+      </div>
+
+    </div>
+  </div>
+</div>

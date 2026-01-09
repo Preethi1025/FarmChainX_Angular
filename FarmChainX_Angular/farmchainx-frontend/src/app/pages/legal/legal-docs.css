@@ -1,0 +1,91 @@
+/* LegalDocs.css */
+.legal-doc-container {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+}
+
+.legal-doc-container h2 {
+  scroll-margin-top: 1rem;
+}
+
+.legal-doc-container h3 {
+  color: #374151;
+  font-weight: 600;
+}
+
+.legal-doc-container a {
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.legal-doc-container ul {
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.legal-doc-container p {
+  line-height: 1.7;
+}
+
+.legal-doc-container table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.legal-doc-container table th {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.75rem;
+}
+
+.legal-doc-container table td, 
+.legal-doc-container table th {
+  padding: 0.75rem 1rem;
+}
+
+.legal-doc-container table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.legal-doc-container table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.prose {
+  color: #374151;
+}
+
+.prose ul {
+  padding-left: 1.5rem;
+}
+
+.prose li {
+  margin-bottom: 0.25rem;
+}
+
+/* Smooth scrolling for anchor links */
+@media (prefers-reduced-motion: no-preference) {
+  .legal-doc-container {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Print styles */
+@media print {
+  .legal-doc-container {
+    padding: 0;
+    background: white;
+  }
+  
+  .legal-doc-container .bg-gray-50,
+  .legal-doc-container .bg-white {
+    background: white !important;
+    box-shadow: none !important;
+    border: 1px solid #e5e7eb !important;
+  }
+  
+  .legal-doc-container a {
+    color: #111827 !important;
+    text-decoration: underline !important;
+  }
+}

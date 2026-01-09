@@ -1,0 +1,115 @@
+<div class="bg-gray-50 min-h-screen">
+
+  <!-- HEADER -->
+  <div class="bg-gradient-to-r from-green-700 to-green-900 text-white py-12">
+    <div class="max-w-5xl mx-auto text-center px-6">
+      <h1 class="text-4xl font-bold mb-4">Help Center</h1>
+      <p class="text-green-100 mb-8">Find answers and support</p>
+
+      <form (submit)="handleSearch($event)" class="relative max-w-xl mx-auto">
+        <input
+          #searchInput
+          [(ngModel)]="searchQuery"
+          name="search"
+          placeholder="Search help..."
+          class="w-full px-6 py-4 rounded-xl text-gray-900"
+        />
+        <button
+          type="submit"
+          class="absolute right-2 top-2 bg-green-600 text-white px-5 py-2 rounded-lg"
+        >
+          Search
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- CATEGORIES -->
+  <div class="max-w-6xl mx-auto px-6 py-10">
+    <h2 class="text-2xl font-bold mb-6">Browse by Category</h2>
+
+    <div class="grid md:grid-cols-4 gap-6">
+      <div
+        *ngFor="let cat of helpCategories"
+        (click)="activeCategory = cat.id"
+        class="cursor-pointer p-5 rounded-xl shadow bg-white hover:shadow-lg"
+      >
+        <h3 class="font-semibold">{{ cat.title }}</h3>
+        <p class="text-sm text-gray-600">{{ cat.description }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div class="max-w-6xl mx-auto px-6 pb-16">
+    <h2 class="text-2xl font-bold mb-6">FAQs</h2>
+
+    <ng-container *ngIf="hasResults; else noResults">
+      <div *ngFor="let entry of filteredFaqs | keyvalue">
+        <h3 class="text-xl font-semibold mb-4 capitalize">
+          {{ getCategoryTitle(entry.key) }}
+        </h3>
+
+        <div *ngFor="let faq of entry.value" class="mb-4 bg-white rounded-lg shadow">
+          <button
+            class="w-full text-left px-6 py-4 flex justify-between"
+            (click)="toggleFaq(faq.id)"
+          >
+            <span>{{ faq.question }}</span>
+            <span>{{ expandedFaqs[faq.id] ? '−' : '+' }}</span>
+          </button>
+
+          <div *ngIf="expandedFaqs[faq.id]" class="px-6 pb-4 text-gray-700">
+            {{ faq.answer }}
+
+            <div class="mt-3">
+              <button
+                (click)="handleContactClick(faq.question)"
+                class="text-green-600 text-sm"
+              >
+                Still need help?
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <ng-template #noResults>
+      <div class="bg-white p-10 text-center rounded-lg shadow">
+        <p>No results found for "{{ searchQuery }}"</p>
+        <button
+          (click)="clearSearch()"
+          class="mt-4 px-6 py-2 bg-green-600 text-white rounded"
+        >
+          Clear Search
+        </button>
+      </div>
+    </ng-template>
+  </div>
+
+  <!-- CONTACT MODAL -->
+  <div *ngIf="showContactForm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+    <div class="bg-white p-6 rounded-lg w-full max-w-md">
+      <h3 class="text-xl font-bold mb-4">Contact Support</h3>
+
+      <input
+        [(ngModel)]="contactTopic"
+        name="topic"
+        class="w-full border px-3 py-2 rounded mb-4"
+      />
+
+      <textarea rows="4" class="w-full border px-3 py-2 rounded"></textarea>
+
+      <div class="flex justify-end gap-3 mt-6">
+        <button (click)="closeContact()" class="px-4 py-2 border rounded">
+          Cancel
+        </button>
+        <button (click)="closeContact()" class="px-4 py-2 bg-green-600 text-white rounded">
+          Submit
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

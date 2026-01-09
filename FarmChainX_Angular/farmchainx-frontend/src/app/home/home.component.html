@@ -1,0 +1,127 @@
+<div class="min-h-screen">
+
+  <!-- HERO SECTION -->
+  <section class="relative gradient-bg text-white overflow-hidden">
+    <div class="absolute inset-0 bg-black/20"></div>
+
+    <div class="relative max-w-7xl mx-auto px-6 py-20 lg:py-32 text-center">
+
+      <div class="inline-flex items-center space-x-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 mb-6">
+        ✨ <span class="text-sm font-medium">Revolutionizing Agriculture</span>
+      </div>
+
+      <h1 class="text-5xl lg:text-7xl font-bold mb-6">
+        From
+        <span class="block bg-gradient-to-r from-yellow-300 to-amber-400 bg-clip-text text-transparent">
+          Farm to Table
+        </span>
+        with Trust
+      </h1>
+
+      <p class="text-xl lg:text-2xl text-green-100 max-w-3xl mx-auto mb-8">
+        FarmChainX brings transparency to agriculture using AI technology.
+        Connect directly with farmers, verify product journeys, and ensure fair trade.
+      </p>
+
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <a
+          routerLink="/register"
+          class="inline-flex items-center justify-center bg-emerald-600 text-white border-2 border-emerald-600
+                 hover:bg-white hover:text-emerald-600 transition-all duration-300
+                 text-lg px-8 py-4 rounded-xl font-semibold">
+          Start Your Journey →
+        </a>
+
+        <a
+          routerLink="/marketplace"
+          class="inline-flex items-center justify-center bg-white text-emerald-600 border-2 border-emerald-600
+                 hover:bg-emerald-600 hover:text-white transition-all duration-300
+                 text-lg px-8 py-4 rounded-xl font-semibold">
+          Explore Marketplace
+        </a>
+      </div>
+    </div>
+
+    <!-- FLOATING DECOR -->
+    <div class="absolute top-20 left-10 text-yellow-300 opacity-60 animate-bounce">
+      🍃
+    </div>
+    <div class="absolute bottom-20 right-10 text-white opacity-40 animate-pulse">
+      🍃
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-8">
+        <div *ngFor="let stat of stats" class="text-center">
+          <div class="text-3xl lg:text-4xl font-bold text-primary-600 mb-2">
+            {{ stat.number }}
+          </div>
+          <div class="text-gray-600 font-medium">
+            {{ stat.label }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="py-20 bg-gradient-to-b from-white to-green-50">
+    <div class="max-w-7xl mx-auto px-6 text-center mb-16">
+      <h2 class="text-4xl lg:text-5xl font-bold mb-4">
+        Why Choose FarmChainX?
+      </h2>
+      <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+        Building the future of agriculture with transparency and trust.
+      </p>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div
+        *ngFor="let feature of features"
+        class="bg-white rounded-2xl p-6 shadow-lg border hover:scale-105 transition">
+
+        <div class="inline-flex p-3 rounded-xl text-white mb-4"
+             [ngClass]="'bg-gradient-to-r ' + feature.color">
+          ⭐
+        </div>
+
+        <h3 class="text-xl font-semibold mb-2">
+          {{ feature.title }}
+        </h3>
+
+        <p class="text-gray-600">
+          {{ feature.description }}
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="py-20 bg-gradient-to-r from-primary-600 to-emerald-700 text-white">
+    <div class="max-w-4xl mx-auto text-center px-6">
+      <h2 class="text-4xl lg:text-5xl font-bold mb-6">
+        Ready to Transform Agriculture?
+      </h2>
+
+      <p class="text-xl text-primary-100 mb-8">
+        Join thousands of farmers and buyers using FarmChainX today.
+      </p>
+
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <a routerLink="/register" class="bg-white text-emerald-600 px-8 py-4 rounded-xl font-semibold">
+          Join as Farmer
+        </a>
+        <a routerLink="/register" class="bg-white text-emerald-600 px-8 py-4 rounded-xl font-semibold">
+          Join as Buyer
+        </a>
+        <a routerLink="/register" class="bg-white text-emerald-600 px-8 py-4 rounded-xl font-semibold">
+          Join as Distributor
+        </a>
+      </div>
+    </div>
+  </section>
+
+</div>

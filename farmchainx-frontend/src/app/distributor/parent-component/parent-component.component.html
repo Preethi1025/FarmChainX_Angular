@@ -1,0 +1,42 @@
+<div class="space-y-6">
+
+  <ng-container *ngFor="let batch of batches">
+
+    <!-- FILTER (EXACT MATCH) -->
+    <ng-container
+      *ngIf="
+        batch.status !== 'DELETED' &&
+        batch.status !== 'EMPTY' &&
+        !batch.blocked
+      "
+    >
+
+      <div class="bg-white rounded-xl shadow border overflow-hidden">
+
+        <!-- BATCH IMAGE -->
+        <img
+          *ngIf="batch.cropImageUrl"
+          [src]="'http://localhost:8080' + batch.cropImageUrl"
+          [alt]="batch.cropType || 'Crop'"
+          class="w-full h-48 object-cover"
+          (error)="onImageError($event)"
+        />
+
+        <!-- BATCH CARD -->
+        <div class="p-4">
+          <app-batch-card
+  [batch]="batch"
+  (approve)="onApprove($event)"
+  (reject)="onReject($event)"
+  (trace)="handleTrace($event)">
+</app-batch-card>
+
+        </div>
+
+      </div>
+
+    </ng-container>
+
+  </ng-container>
+
+</div>

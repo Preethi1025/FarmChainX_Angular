@@ -1,0 +1,288 @@
+<div class="min-h-screen bg-gradient-to-b from-green-50 to-white p-4">
+  <div class="max-w-6xl mx-auto">
+    
+    <!-- Header -->
+    <div class="bg-white rounded-2xl shadow-xl p-6 mb-6 border border-green-200">
+      <div class="flex items-center gap-4 mb-4">
+        <div class="bg-gradient-to-r from-green-600 to-emerald-600 text-white p-4 rounded-xl">
+          <span class="text-3xl">🤖</span>
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900">Kisan AI Assistant</h1>
+          <p class="text-gray-600 hidden md:block">Real AI-powered farming guide with prices, techniques & expert advice</p>
+        </div>
+      </div>
+      
+      <!-- AI Status -->
+      <div class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-50 to-emerald-50 rounded-full border border-green-200 mb-6">
+        <span class="h-2 w-2 bg-emerald-500 rounded-full animate-pulse"></span>
+        <span class="text-sm font-medium text-primary-700">Powered by Groq AI • Real-time Data</span>
+      </div>
+      
+      <!-- Search Form -->
+      <form [formGroup]="cropForm" (ngSubmit)="onSubmit()" class="mb-6">
+        <div class="space-y-4">
+          <div *ngIf="error" class="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+            ⚠️ {{error}}
+          </div>
+          
+          <div class="flex gap-3">
+            <input
+              type="text"
+              formControlName="cropName"
+              placeholder="Ask about ANY crop (e.g., 'Banana farming', 'Tomato cultivation techniques', 'Rice market price'...)"
+              class="flex-1 px-5 py-4 text-base border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent shadow-sm"
+              (keydown.enter)="$event.preventDefault(); onSubmit()"
+              [disabled]="loading"
+            >
+            <button
+              type="submit"
+              [disabled]="loading || cropForm.invalid"
+              class="px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold rounded-xl hover:from-green-700 hover:to-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-lg hover:shadow-green-200 transition-all duration-300"
+            >
+              <span *ngIf="loading" class="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></span>
+              {{loading ? 'Asking AI...' : 'Get Farming Guide'}}
+            </button>
+          </div>
+          <p class="text-sm text-gray-500">
+            Enter exact crop name for most accurate AI response
+          </p>
+        </div>
+      </form>
+
+      <!-- Popular Crops -->
+      <div class="mb-4">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="text-xl">🌱</span>
+          <h3 class="font-semibold text-gray-900">Popular Crops - Click for AI Guide</h3>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-3">
+          <button
+            *ngFor="let crop of popularCrops"
+            (click)="selectCrop(crop.name)"
+            [disabled]="loading"
+            [class]="crop.color + ' p-4 rounded-xl border border-gray-200 hover:scale-105 transition-all duration-300 group ' + (loading ? 'opacity-50' : 'hover:shadow-md')"
+          >
+            <div class="flex flex-col items-center">
+              <span class="text-3xl mb-2 group-hover:scale-110 transition-transform">{{ crop.icon }}</span>
+              <span class="font-medium text-gray-900 text-sm">{{ crop.name }}</span>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="bg-white rounded-2xl shadow-xl p-8 text-center mb-6">
+      <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+      <p class="mt-4 text-lg text-gray-700">Asking AI for comprehensive farming guide...</p>
+      <p class="text-sm text-gray-500 mt-2">Fetching season info, current prices, growing techniques & expert advice</p>
+      <div class="w-64 h-1 bg-gray-200 rounded-full mt-4 mx-auto overflow-hidden">
+        <div class="h-full bg-green-500 animate-pulse" style="width: 70%"></div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div *ngIf="guide" class="space-y-6">
+      
+      <!-- Guide Header -->
+      <div class="bg-gradient-to-r from-green-100 to-emerald-100 rounded-2xl p-6 border border-green-300">
+        <div class="flex justify-between items-center">
+          <div>
+            <h2 class="text-2xl font-bold text-gray-900">{{ guide.data.crop_name || guide.cropName }}</h2>
+            <div class="mt-2 flex items-center gap-3">
+              <span [class]="guide.success ? 'bg-green-600 text-white' : 'bg-blue-600 text-white'"
+                    class="px-4 py-1 rounded-full text-sm font-medium">
+                {{ guide.success ? '🤖 Live AI Guide' : '📚 Farming Database' }}
+              </span>
+              <span class="text-gray-600">{{ guide.message }}</span>
+            </div>
+          </div>
+          <div class="text-right">
+            <div class="text-sm text-gray-500">AI Response</div>
+            <div class="font-medium">{{ guide.timestamp | date:'shortTime' }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="bg-white rounded-xl p-4 shadow border">
+          <div class="text-sm text-gray-500">Best Planting Season</div>
+          <div class="text-lg font-bold text-gray-900 mt-1">{{ guide.data.best_season || 'Check AI response' }}</div>
+          <div class="text-sm text-gray-600 mt-1">{{ guide.data.planting_time || '' }}</div>
+        </div>
+        
+        <div class="bg-white rounded-xl p-4 shadow border">
+          <div class="text-sm text-gray-500">Growth Duration</div>
+          <div class="text-lg font-bold text-gray-900 mt-1">{{ guide.data.growth_duration || 'Varies' }}</div>
+          <div class="text-sm text-gray-600 mt-1">Harvest: {{ guide.data.harvest_time || '' }}</div>
+        </div>
+        
+        <div class="bg-white rounded-xl p-4 shadow border">
+          <div class="text-sm text-gray-500">Expected Yield</div>
+          <div class="text-lg font-bold text-gray-900 mt-1">{{ guide.data.yield_per_acre || 'Check details' }}</div>
+          <div class="text-sm text-gray-600 mt-1">per acre</div>
+        </div>
+        
+        <div class="bg-white rounded-xl p-4 shadow border">
+          <div class="text-sm text-gray-500">Market Price</div>
+          <div class="text-lg font-bold text-green-700 mt-1">{{ guide.data.current_market_price || 'Varies' }}</div>
+          <div class="text-sm text-gray-600 mt-1">Current rate</div>
+        </div>
+      </div>
+
+      <!-- Main Information -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Left Column -->
+        <div class="space-y-6">
+          <!-- Soil & Water -->
+          <div class="bg-white rounded-xl p-5 shadow border">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">🌱 Soil & Water Management</h3>
+            <div class="space-y-3">
+              <div>
+                <div class="text-sm text-gray-500">Soil Type</div>
+                <div class="font-medium">{{ guide.data.soil_type || 'Information not available' }}</div>
+              </div>
+              <div>
+                <div class="text-sm text-gray-500">Soil pH</div>
+                <div class="font-medium">{{ guide.data.soil_ph || '6.0-7.0 optimal' }}</div>
+              </div>
+              <div>
+                <div class="text-sm text-gray-500">Water Requirement</div>
+                <div class="font-medium">{{ guide.data.water_requirement || 'Regular irrigation needed' }}</div>
+              </div>
+              <div>
+                <div class="text-sm text-gray-500">Irrigation Method</div>
+                <div class="font-medium">{{ guide.data.irrigation_method || 'Drip irrigation recommended' }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Fertilizer -->
+          <div *ngIf="guide.data.fertilizer_schedule" class="bg-white rounded-xl p-5 shadow border">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">🧪 Fertilizer Schedule</h3>
+            <div class="space-y-3">
+              <div>
+                <div class="text-sm text-gray-500">Basal Application</div>
+                <div class="font-medium">{{ guide.data.fertilizer_schedule.basal || 'At planting time' }}</div>
+              </div>
+              <div>
+                <div class="text-sm text-gray-500">Top Dressing</div>
+                <div class="font-medium">{{ guide.data.fertilizer_schedule.top_dressing || 'During growth' }}</div>
+              </div>
+              <div>
+                <div class="text-sm text-gray-500">NPK Ratio</div>
+                <div class="font-medium">{{ guide.data.fertilizer_schedule.npk_ratio || 'Based on soil test' }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Middle Column -->
+        <div class="space-y-6">
+          <!-- Pest Management -->
+          <div *ngIf="guide.data.pest_management" class="bg-white rounded-xl p-5 shadow border">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">🐛 Pest & Disease Control</h3>
+            <div class="space-y-3">
+              <div>
+                <div class="text-sm text-gray-500">Common Pests</div>
+                <div class="font-medium">{{ guide.data.pest_management.common_pests || 'Monitor regularly' }}</div>
+              </div>
+              <div>
+                <div class="text-sm text-gray-500">Pesticides</div>
+                <div class="font-medium">{{ guide.data.pest_management.pesticides || 'Use as needed' }}</div>
+              </div>
+              <div>
+                <div class="text-sm text-gray-500">Insecticides</div>
+                <div class="font-medium">{{ guide.data.pest_management.insecticides || 'Neem-based recommended' }}</div>
+              </div>
+              <div>
+                <div class="text-sm text-gray-500">Organic Control</div>
+                <div class="font-medium">{{ guide.data.pest_management.organic_control || 'Integrated pest management' }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Growing Techniques -->
+          <div class="bg-white rounded-xl p-5 shadow border">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">🚜 Growing Techniques</h3>
+            <div class="space-y-3">
+              <div>
+                <div class="text-sm text-gray-500">Spacing</div>
+                <div class="font-medium">{{ guide.data.spacing || 'Proper spacing needed' }}</div>
+              </div>
+              <div>
+                <div class="text-sm text-gray-500">Seed Rate</div>
+                <div class="font-medium">{{ guide.data.seed_rate || 'Quality seeds required' }}</div>
+              </div>
+              <div class="text-gray-700">{{ guide.data.growing_techniques || 'Follow best agricultural practices' }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="space-y-6">
+          <!-- Economics -->
+          <div class="bg-white rounded-xl p-5 shadow border">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">💰 Economics (Per Acre)</h3>
+            <div class="space-y-3">
+              <div class="flex justify-between">
+                <span class="text-gray-600">Cost of Cultivation</span>
+                <span class="font-medium">{{ guide.data.cost_of_cultivation || 'Varies' }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Expected Profit</span>
+                <span class="font-medium text-green-700">{{ guide.data.expected_profit || 'Market dependent' }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Market Price</span>
+                <span class="font-medium">{{ guide.data.current_market_price || 'Check local mandi' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Expert Tips -->
+          <div *ngIf="guide.data.expert_tips" class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-5 shadow border border-green-200">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">💡 Expert Tips from AI</h3>
+            <ul class="space-y-2">
+              <li *ngFor="let tip of (guide.data.expert_tips | slice:0:3)" class="flex items-start gap-2">
+                <span class="text-green-600 mt-1">•</span>
+                <span class="text-gray-700">{{ tip }}</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Support -->
+          <div class="bg-blue-50 rounded-xl p-5 shadow border border-blue-200">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">📞 Support & Schemes</h3>
+            <div class="space-y-2">
+              <div class="text-gray-700">{{ guide.data.government_schemes || 'Check PM-KISAN, Soil Health Card' }}</div>
+              <div class="font-medium text-gray-900">{{ guide.data.contact_help || 'Contact local KVK' }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Raw AI Response (for debugging) -->
+      <div *ngIf="guide.success" class="mt-6">
+        <details class="bg-gray-50 rounded-xl p-4">
+          <summary class="font-medium text-gray-700 cursor-pointer">📊 View Raw AI Response</summary>
+          <pre class="mt-3 text-xs text-gray-600 overflow-auto max-h-60 p-3 bg-white rounded">{{ guide.data | json }}</pre>
+        </details>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="text-center py-6 border-t border-gray-200 mt-8">
+      <p class="text-sm text-gray-600">
+        Kisan AI Assistant • Powered by Groq AI • Always free for farmers
+      </p>
+      <p class="text-xs text-gray-500 mt-2">
+        Note: AI responses are for guidance. Always verify with local agricultural authorities.
+      </p>
+    </div>
+    
+  </div>
+</div>

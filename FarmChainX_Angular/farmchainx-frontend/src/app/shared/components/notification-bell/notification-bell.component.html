@@ -1,0 +1,55 @@
+<div class="relative">
+
+  <button (click)="toggleDropdown()" class="relative p-2">
+    🔔
+    <span *ngIf="unreadCount"
+      class="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1 rounded-full">
+      {{ unreadCount }}
+    </span>
+  </button>
+
+  <div *ngIf="showDropdown"
+    class="absolute right-0 mt-2 w-80 bg-white rounded shadow z-50">
+
+    <div class="flex justify-between p-3 border-b">
+      <b>Notifications</b>
+      <div class="flex gap-2">
+        <button *ngIf="unreadCount"
+          class="text-blue-600 text-sm"
+          (click)="markAllAsRead()">Mark all</button>
+        <button (click)="close()">✕</button>
+      </div>
+    </div>
+
+    <div *ngIf="loading" class="p-6 text-center">
+      Loading notifications...
+    </div>
+
+    <div *ngIf="!loading && notifications.length === 0"
+      class="p-6 text-gray-500 text-center">
+      No notifications
+    </div>
+
+    <div *ngFor="let n of notifications"
+      class="p-3 border-b hover:bg-gray-50">
+
+      <div class="flex justify-between">
+        <b>{{ n.title }}</b>
+        <button class="text-red-500"
+          (click)="delete(n, $event)">×</button>
+      </div>
+
+      <p class="text-sm">{{ n.message }}</p>
+
+      <div class="flex justify-between text-xs text-gray-500 mt-1">
+        <span>{{ n.createdAt | date:'short' }}</span>
+        <button
+          *ngIf="!n.read"
+          (click)="markAsRead(n, $event)"
+          class="text-blue-600">
+          Mark read
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

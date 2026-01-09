@@ -1,0 +1,34 @@
+<h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+  📊 Overview
+</h2>
+
+<!-- LOADING -->
+<div *ngIf="loading" class="text-center py-10">
+  <div class="animate-spin h-8 w-8 border-b-2 border-purple-600 mx-auto"></div>
+</div>
+
+<!-- STATS -->
+<div *ngIf="!loading" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+  <div class="bg-white p-6 rounded-lg shadow">
+    <div class="text-gray-500">Total Users</div>
+    <div class="text-3xl font-bold mt-2">
+      {{ stats.totalUsers }}
+    </div>
+  </div>
+
+  <div class="bg-white p-6 rounded-lg shadow">
+    <div class="text-gray-500">Active Crops</div>
+    <div class="text-3xl font-bold mt-2">
+      {{ stats.activeCrops }}
+    </div>
+  </div>
+
+  <div class="bg-white p-6 rounded-lg shadow">
+    <div class="text-gray-500">Support Tickets</div>
+    <div class="text-3xl font-bold mt-2">
+      {{ stats.supportTickets }}
+    </div>
+  </div>
+
+</div>

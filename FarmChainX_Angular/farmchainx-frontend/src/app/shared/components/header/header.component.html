@@ -1,0 +1,105 @@
+<header class="glass-effect sticky top-0 z-50 shadow-sm">
+  <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center h-16">
+
+      <!-- LOGO -->
+      <a routerLink="/" class="flex items-center space-x-3 group">
+        <div class="bg-gradient-to-r from-primary-500 to-emerald-600 p-2 rounded-xl">
+          🌿
+        </div>
+        <div>
+          <h1 class="text-xl font-bold text-primary-700">FarmChainX</h1>
+          <p class="text-xs text-gray-500">Transparent Agriculture</p>
+        </div>
+      </a>
+
+      <!-- CENTER NAV -->
+      <div class="hidden md:flex items-center space-x-8">
+        <a *ngFor="let item of navigation"
+           [routerLink]="item.href"
+           [ngClass]="currentPath === item.href ? 'text-primary-600' : 'text-gray-600'"
+           class="font-medium">
+          {{ item.name }}
+        </a>
+
+        <a *ngFor="let item of getRoleNav()"
+           [routerLink]="item.href"
+           class="font-medium text-gray-600">
+          {{ item.name }}
+        </a>
+      </div>
+
+      <!-- RIGHT SIDE -->
+      <div class="hidden md:flex items-center space-x-4">
+
+        <!-- 🔓 GUEST -->
+        <ng-container *ngIf="!user">
+          <a routerLink="/login" class="text-gray-700 font-medium">
+            Sign In
+          </a>
+
+          <a
+            routerLink="/register"
+            class="px-4 py-2 rounded-lg bg-primary-600 text-white hover:bg-primary-700 transition">
+            Get Started
+          </a>
+        </ng-container>
+
+        <!-- 🔐 LOGGED IN -->
+        <ng-container *ngIf="user">
+
+          <!-- 🔔 Notification Bell -->
+          <app-notification-bell></app-notification-bell>
+
+          <!-- 🤖 FARMER ONLY -->
+          <button
+            *ngIf="user.role === 'FARMER'"
+            (click)="goToKisanAI()"
+            class="flex items-center gap-2 bg-gradient-to-r from-green-600 to-emerald-600
+                   text-white px-4 py-2 rounded-lg shadow-md
+                   hover:from-green-700 hover:to-emerald-700 transition">
+            <span>🤖</span>
+            <span>Kisan AI Assistant</span>
+          </button>
+
+          <!-- 👤 USER INFO -->
+          <div class="bg-primary-50 rounded-full px-3 py-1 text-sm">
+            {{ user.name || 'User' }} ({{ user.role | lowercase }})
+          </div>
+
+          <!-- 🚪 LOGOUT -->
+          <button (click)="logout()" class="text-red-500 font-medium">
+            Logout
+          </button>
+        </ng-container>
+
+      </div>
+
+      <!-- MOBILE MENU -->
+      <button (click)="isMenuOpen = !isMenuOpen" class="md:hidden">
+        ☰
+      </button>
+    </div>
+
+    <!-- MOBILE DROPDOWN -->
+    <div *ngIf="isMenuOpen" class="md:hidden py-4 space-y-2">
+      <a *ngFor="let item of navigation"
+         [routerLink]="item.href"
+         (click)="isMenuOpen=false">
+        {{ item.name }}
+      </a>
+
+      <a *ngFor="let item of getRoleNav()"
+         [routerLink]="item.href"
+         (click)="isMenuOpen=false">
+        {{ item.name }}
+      </a>
+
+      <a *ngIf="!user" routerLink="/login">Sign In</a>
+      <a *ngIf="!user" routerLink="/register">Get Started</a>
+
+      <button *ngIf="user" (click)="logout()">Logout</button>
+    </div>
+
+  </nav>
+</header>

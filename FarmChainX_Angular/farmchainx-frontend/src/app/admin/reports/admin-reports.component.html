@@ -1,0 +1,40 @@
+<h1 class="text-3xl font-bold mb-8">System Reports</h1>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+
+  <!-- User Distribution -->
+  <div class="bg-white rounded-xl shadow p-6">
+    <h2 class="font-semibold mb-4">User Distribution</h2>
+
+    <!-- HEIGHT IS CRITICAL -->
+    <div class="relative h-[300px]">
+      <canvas #userPie></canvas>
+    </div>
+  </div>
+
+  <!-- User Count -->
+  <div class="bg-white rounded-xl shadow p-6">
+    <h2 class="font-semibold mb-4">User Count</h2>
+
+    <div class="relative h-[300px]">
+      <canvas #userBar></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Crop-wise Summary -->
+<div class="bg-white rounded-xl shadow p-6">
+  <h2 class="font-semibold mb-6">Crop-wise Summary</h2>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+    <div class="relative h-[350px]">
+      <canvas #cropBar></canvas>
+    </div>
+
+    <div class="h-[350px]">
+      <canvas #cropPie></canvas>
+    </div>
+
+  </div>
+</div>

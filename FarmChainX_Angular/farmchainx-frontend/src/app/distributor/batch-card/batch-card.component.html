@@ -1,0 +1,97 @@
+<div
+  *ngIf="batch && batch.status !== 'DELETED' && batch.status !== 'EMPTY'"
+  class="p-5 rounded-2xl shadow-lg bg-white border border-gray-200 hover:shadow-xl transition-all duration-200 overflow-hidden"
+>
+  <!-- IMAGE SECTION -->
+  <div class="relative mb-3 rounded-xl overflow-hidden h-40">
+    <img
+      [src]="imageUrl"
+      [alt]="batch.cropType || 'Crop'"
+      class="w-full h-full object-cover hover:scale-105 transition duration-500"
+      (error)="onImageError($event)"
+    />
+
+    <!-- STATUS BADGE -->
+    <span class="absolute top-3 right-3 bg-yellow-100 text-yellow-700 text-xs px-3 py-1 rounded-full shadow">
+      {{ batch.status }}
+    </span>
+
+    <!-- CROP NAME OVER IMAGE -->
+    <div class="absolute bottom-3 left-3 bg-black/50 text-white px-3 py-1 rounded-lg text-sm flex items-center gap-2">
+      <svg class="w-4 h-4 text-white"><use xlink:href="#leaf-icon"></use></svg>
+      {{ batch.cropType || 'Unknown Crop' }}
+    </div>
+  </div>
+
+  <!-- BASIC INFO -->
+  <div class="space-y-2 text-sm text-gray-700">
+    <p class="flex items-center gap-2">
+      <svg class="w-4 h-4 text-green-600"><use xlink:href="#scale-icon"></use></svg>
+      <strong>{{ batch.totalQuantity || 0 }} kg</strong>
+    </p>
+
+    <p class="flex items-center gap-2">
+      <svg class="w-4 h-4 text-green-700"><use xlink:href="#rupee-icon"></use></svg>
+      <strong>
+        {{ batch.price && batch.price > 0 ? '₹' + batch.price + ' / kg' : 'Price not set' }}
+      </strong>
+    </p>
+
+    <p class="flex items-center gap-2" *ngIf="batch.listingQuantity != null">
+      <svg class="w-4 h-4 text-teal-600"><use xlink:href="#package-check-icon"></use></svg>
+      Listing Qty: <strong>{{ batch.listingQuantity }} kg</strong>
+    </p>
+
+    <p class="flex items-center gap-2">
+      <svg class="w-4 h-4 text-blue-600"><use xlink:href="#user-icon"></use></svg>
+      Farmer: <strong>{{ batch.farmerName || batch.farmerId || 'N/A' }}</strong>
+    </p>
+
+    <p class="flex items-center gap-2">
+      <svg class="w-4 h-4 text-purple-600"><use xlink:href="#map-pin-icon"></use></svg>
+      Location: <strong>{{ batch.location || 'N/A' }}</strong>
+    </p>
+
+    <p class="flex items-center gap-2">
+      <svg class="w-4 h-4 text-yellow-500"><use xlink:href="#star-icon"></use></svg>
+      Quality Score:
+      <strong>
+        <ng-container *ngIf="batch.avgQualityScore != null; else noScore">
+          {{ (batch.avgQualityScore | number:'1.0-1') + '%' }}
+        </ng-container>
+        <ng-template #noScore>Not Available</ng-template>
+      </strong>
+    </p>
+
+    <p class="flex items-center gap-2" *ngIf="batch.certification">
+      <svg class="w-4 h-4 text-indigo-600"><use xlink:href="#badge-check-icon"></use></svg>
+      Certification: <strong>{{ batch.certification }}</strong>
+    </p>
+  </div>
+
+  <!-- ACTION BUTTONS -->
+  <div class="mt-4 flex gap-3 flex-wrap">
+    <ng-container *ngIf="!readOnly">
+      <button
+        class="px-4 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition"
+        (click)="emitApprove()"
+      >
+        Approve
+      </button>
+
+      <button
+        class="px-4 py-2 bg-red-500 text-white rounded-lg shadow hover:bg-red-600 transition"
+        (click)="emitReject()"
+      >
+        Reject
+      </button>
+    </ng-container>
+
+    <button
+      class="px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition"
+      (click)="emitTrace()"
+    >
+      Trace
+    </button>
+  </div>
+</div>

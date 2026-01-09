@@ -1,0 +1,121 @@
+<div class="min-h-screen bg-gray-50">
+
+  <!-- HEADER -->
+  <div class="bg-white shadow border-b sticky top-0 z-10">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+
+      <div>
+        <h1 class="text-xl font-bold">
+          Welcome, {{ user?.name }} 🌱
+        </h1>
+        <p class="text-sm text-gray-600">
+          Buy fresh produce directly from farmers
+        </p>
+      </div>
+
+      <div class="flex items-center gap-4">
+
+        <!-- CART BUTTON -->
+        <button
+          (click)="goToCart()"
+          class="relative bg-gray-100 px-4 py-2 rounded-xl hover:bg-gray-200">
+
+          🛒 Cart
+
+          <span
+            *ngIf="cartCount > 0"
+            class="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
+            {{ cartCount }}
+          </span>
+        </button>
+
+        <!-- AI BUTTON -->
+        <button
+          (click)="openAIAssistant()"
+          class="bg-green-600 text-white px-4 py-2 rounded-xl hover:bg-green-700">
+          🤖 AI Assistant
+        </button>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="max-w-7xl mx-auto p-6">
+
+    <!-- QUICK ACTIONS -->
+    <div class="grid sm:grid-cols-3 gap-6 mb-10">
+
+      <div class="bg-white p-6 rounded-xl shadow">
+        <h3 class="font-semibold">Marketplace</h3>
+        <button (click)="go('/marketplace')" class="text-green-600 mt-3">
+          Explore →
+        </button>
+      </div>
+
+      <div class="bg-white p-6 rounded-xl shadow">
+        <h3 class="font-semibold">My Orders</h3>
+        <button (click)="go('/consumer/my-orders')" class="text-blue-600 mt-3">
+          Track →
+        </button>
+      </div>
+
+      <div class="bg-white p-6 rounded-xl shadow">
+        <h3 class="font-semibold">Offers</h3>
+        <button class="text-purple-600 mt-3">
+          Coming Soon →
+        </button>
+      </div>
+
+    </div>
+
+    <!-- CART PREVIEW -->
+    <div class="bg-white rounded-xl shadow p-6">
+
+      <h2 class="text-lg font-semibold mb-4">My Cart</h2>
+
+      <div *ngIf="cart.length === 0" class="text-gray-500">
+        Your cart is empty 🧺
+      </div>
+
+      <div *ngIf="cart.length > 0" class="space-y-3 max-h-64 overflow-y-auto">
+
+        <div
+          *ngFor="let item of cart; let i = index"
+          class="flex justify-between items-center border rounded-lg p-3 text-sm">
+
+          <div class="flex gap-3 items-center">
+            <!-- <img
+              *ngIf="item.image"
+              [src]="item.image"
+              class="w-12 h-12 rounded object-cover"
+            /> -->
+
+            <div>
+              <p class="font-medium">{{ item.name }}</p>
+              <p class="text-gray-500">
+                {{ item.quantity }} × ₹{{ item.price }}
+              </p>
+            </div>
+          </div>
+
+          <button
+            (click)="removeFromCart(i)"
+            class="text-red-500 hover:underline">
+            Remove
+          </button>
+
+        </div>
+
+        <button
+          (click)="go('/marketplace')"
+          class="mt-4 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+          Buy Now & Explore More items →
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+</div>

@@ -1,0 +1,104 @@
+<footer class="farmchainx-footer bg-gradient-to-br from-gray-900 to-primary-900 text-white">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+
+      <!-- BRAND -->
+      <div class="col-span-1 md:col-span-2">
+        <div class="flex items-center space-x-3 mb-2">
+          <div class="bg-white p-2 rounded-xl">🌿</div>
+          <div>
+            <h3 class="footer-logo text-xl font-bold">FarmChainX</h3>
+            <p class="footer-tagline">Transparent Agriculture</p>
+          </div>
+        </div>
+
+        <p class="footer-description">
+          Revolutionizing agriculture with AI-driven traceability and direct farmer-to-buyer marketplace.
+          Ensuring transparency, fairness, and quality from farm to table.
+        </p>
+      </div>
+
+      <!-- PLATFORM -->
+      <div class="footer-section">
+        <h3 class="footer-heading">Platform</h3>
+        <ul class="footer-links">
+          <li>
+            <button class="footer-link-btn" (click)="handleFooterClick('marketplace')">
+              Marketplace
+            </button>
+          </li>
+
+          <li>
+            <button class="footer-link-btn" (click)="handleFooterClick('farmer-dashboard')">
+              For Farmers
+            </button>
+          </li>
+
+          <li>
+            <button class="footer-link-btn" (click)="handleFooterClick('buyer-dashboard')">
+              For Buyers
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <!-- SUPPORT -->
+      <div class="footer-section">
+        <h3 class="footer-heading">Support</h3>
+        <ul class="footer-links">
+          <li>
+            <button class="footer-link-btn" (click)="handleFooterClick('help')">
+              Help Center
+            </button>
+          </li>
+
+          <li>
+            <button class="footer-link-btn" (click)="handleFooterClick('contact')">
+              Contact
+            </button>
+          </li>
+
+          <li>
+            <button class="footer-link-btn" (click)="handleFooterClick('privacy')">
+              Privacy Policy
+            </button>
+          </li>
+
+          <li>
+            <button class="footer-link-btn" (click)="handleFooterClick('terms')">
+              Terms & Conditions
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <!-- CONTACT INFO -->
+      <div>
+        <h3 class="font-semibold mb-4">Contact Info</h3>
+        <div class="contact-info">
+          <p class="contact-item">📧 support@farmchainx.com</p>
+          <p class="contact-item">📞 +91 9686322533</p>
+          <p class="contact-item">📍 28-1170/1, T Nagar, Chennai</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="footer-bottom mt-4 pt-3 text-center">
+      <p class="copyright">
+        © {{ year }} FarmChainX. All rights reserved.
+      </p>
+      <p class="version">Version 1.0.0 | Farm-to-Table Traceability System</p>
+    </div>
+  </div>
+</footer>
+
+<!-- CONTACT MODAL -->
+<app-contact-form
+  *ngIf="showContactForm"
+  [userType]="userType"
+  [userId]="userId"
+  [userName]="userName"
+  (close)="closeContact()">
+</app-contact-form>

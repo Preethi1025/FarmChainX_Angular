@@ -1,0 +1,165 @@
+<div class="p-6" *ngIf="distributorId; else loginMsg">
+
+  <h1 class="text-3xl font-bold mb-6">Distributor Dashboard</h1>
+
+  <!-- ================= STATS ================= -->
+  <div class="grid md:grid-cols-3 gap-4 mb-6">
+    <div class="bg-white p-4 rounded-xl shadow border">
+      <p class="text-sm text-gray-500">Total Distributor Earnings</p>
+      <p class="text-2xl font-bold text-green-700">
+  ₹{{ totalDistributorEarnings / 10 | number:'1.2-2' }}
+</p>
+    </div>
+    
+
+    <div class="bg-white p-4 rounded-xl shadow border">
+      <p class="text-sm text-gray-500">Live Orders</p>
+      <p class="text-2xl font-bold text-green-700">{{ liveOrders.length }}</p>
+    </div>
+
+    <div class="bg-white p-4 rounded-xl shadow border">
+      <p class="text-sm text-gray-500">Order History</p>
+      <p class="text-2xl font-bold text-green-700">{{ historyOrders.length }}</p>
+    </div>
+  </div>
+
+  <!-- ================= TABS ================= -->
+  <div class="flex gap-3 mb-6">
+    <button
+      *ngFor="let t of tabs"
+      (click)="onTabChange(t)"
+      class="px-4 py-2 rounded-lg text-sm font-medium"
+      [ngClass]="tab === t ? 'bg-green-600 text-white' : 'bg-gray-200'">
+      {{ t }}
+    </button>
+  </div>
+
+  <!-- ================= BATCHES ================= -->
+  <ng-container *ngIf="tab === 'BATCHES'">
+
+    <h2 class="text-xl font-semibold mb-4">Pending Batches</h2>
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+      <app-batch-card
+        *ngFor="let b of pendingBatches"
+        [batch]="b"
+        (approve)="approveBatch($event)"
+        (reject)="rejectBatch($event)"
+        (trace)="goToTrace($event)">
+      </app-batch-card>
+    </div>
+
+    <h2 class="text-xl font-semibold mb-4">Approved Batches</h2>
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <app-batch-card
+        *ngFor="let b of approvedBatches"
+        [batch]="b"
+        [readOnly]="true"
+        (trace)="goToTrace($event)">
+      </app-batch-card>
+    </div>
+
+  </ng-container>
+
+  <!-- ================= LIVE ORDERS ================= -->
+  <ng-container *ngIf="tab === 'ORDERS'">
+    <h2 class="text-xl font-semibold mb-4">Live Orders</h2>
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div *ngFor="let order of liveOrders" class="bg-white p-5 rounded-xl shadow border">
+        <!-- Order image -->
+        <img
+          [src]="order.cropImageUrl ? ('http://localhost:8080' + order.cropImageUrl) : '/assets/placeholder.png'"
+          class="w-full h-40 object-cover rounded-lg mb-3"
+          (error)=" $event.target.src='/assets/placeholder.png' "
+          alt="Order image"
+        />
+
+        <div class="flex justify-between mb-2">
+          <h3 class="font-semibold">{{ order.orderCode }}</h3>
+          <span class="px-2 py-1 rounded-full text-xs font-medium"
+                [ngClass]="{
+                  'bg-yellow-100 text-yellow-700': order.status==='IN_WAREHOUSE',
+                  'bg-blue-100 text-blue-700': order.status==='IN_TRANSIT',
+                  'bg-green-100 text-green-700': order.status==='DELIVERED',
+                  'bg-red-100 text-red-700': order.status==='CANCELLED'
+                }">
+            {{ order.status.replace('_',' ') }}
+          </span>
+        </div>
+
+        <p class="font-medium">{{ order.cropName }}</p>
+        <p>Quantity: {{ order.quantity }} kg</p>
+        <p>Total: ₹{{ order.totalAmount }}</p>
+        <p>
+  📍 Delivery Address:
+  <span>{{ order.deliveryAddress || 'Not provided' }}</span>
+</p>
+
+<p>
+  📞 Mobile:
+  <span>{{ order.contactNumber || 'Not provided' }}</span>
+</p>
+        <!-- Actions -->
+        <div class="flex flex-wrap gap-2 mt-4">
+          <button class="bg-yellow-500 text-white px-3 py-1 rounded"
+                  (click)="updateStatus(order.orderId,'IN_WAREHOUSE')">
+            Warehouse
+          </button>
+          <button class="bg-blue-500 text-white px-3 py-1 rounded"
+                  (click)="updateStatus(order.orderId,'IN_TRANSIT')">
+            Transit
+          </button>
+          <button class="bg-green-600 text-white px-3 py-1 rounded"
+                  (click)="updateStatus(order.orderId,'DELIVERED')">
+            Delivered
+          </button>
+          <button class="bg-red-600 text-white px-3 py-1 rounded"
+                  (click)="cancelOrder(order.orderId)">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ================= ORDER HISTORY ================= -->
+  <ng-container *ngIf="tab === 'HISTORY'">
+    <h2 class="text-xl font-semibold mb-4">Order History</h2>
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div *ngFor="let order of historyOrders" class="bg-green-50 p-5 rounded-xl shadow border">
+        <img
+          [src]="order.cropImageUrl ? ('http://localhost:8080' + order.cropImageUrl) : '/assets/placeholder.png'"
+          class="w-full h-36 object-cover rounded-lg mb-3"
+          alt="Order image"
+        />
+
+        <div class="flex justify-between mb-2">
+          <h3 class="font-semibold">{{ order.orderCode }}</h3>
+          <span class="px-2 py-1 rounded-full text-xs font-medium"
+                [ngClass]="{
+                  'bg-green-100 text-green-700': order.status==='DELIVERED',
+                  'bg-red-100 text-red-700': order.status==='CANCELLED'
+                }">
+            {{ order.status.replace('_',' ') }}
+          </span>
+        </div>
+
+        <p class="font-medium">{{ order.cropName }}</p>
+        <p>Quantity: {{ order.quantity }} kg</p>
+        <p>Total: ₹{{ order.totalAmount }}</p>
+
+        <div *ngIf="order.status==='DELIVERED'" class="mt-3 bg-white p-3 rounded border">
+          💰 Distributor Profit: ₹{{ getDistributorProfit(order) }}
+        </div>
+
+        <div *ngIf="order.status==='CANCELLED'" class="mt-3 bg-red-100 p-3 rounded border">
+          ❌ Order Cancelled — No Profit
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+</div>
+
+<ng-template #loginMsg>
+  <p class="text-center mt-10">Login as distributor</p>
+</ng-template>

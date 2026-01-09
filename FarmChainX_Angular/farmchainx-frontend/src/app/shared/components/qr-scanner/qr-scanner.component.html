@@ -1,0 +1,16 @@
+<div class="scanner-backdrop">
+  <div class="scanner-box">
+
+    <button (click)="close.emit()">✕</button>
+
+    <div *ngIf="!isScanning && !scannedData">
+      <button (click)="startCamera()">Start Camera</button>
+    </div>
+
+    <div *ngIf="scannedData">
+      <h3>Verified</h3>
+      <p>{{ scannedData.product }}</p>
+    </div>
+
+  </div>
+</div>

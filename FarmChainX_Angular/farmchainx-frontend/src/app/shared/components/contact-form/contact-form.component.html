@@ -1,0 +1,108 @@
+<div class="contact-form-overlay">
+  <div class="contact-form-modal">
+
+    <div class="contact-form-header">
+      <h2>Contact Admin / Report Issue</h2>
+      <button class="close-btn" (click)="onClose()" [disabled]="loading">×</button>
+    </div>
+
+    <form (ngSubmit)="handleSubmit()" class="contact-form">
+
+      <!-- Issue Type -->
+      <div class="form-group">
+        <label>Issue Type *</label>
+        <select
+          [(ngModel)]="formData.issueType"
+          name="issueType"
+          required
+          [disabled]="loading || !user"
+        >
+          <option value="">Select Issue Type</option>
+          <option *ngFor="let type of issueTypes" [value]="type.value">
+            {{ type.label }}
+          </option>
+        </select>
+      </div>
+
+      <!-- User Dispute -->
+      <div *ngIf="formData.issueType === 'USER_DISPUTE'" class="user-dispute-fields">
+
+        <div class="form-group">
+          <label>Report Against User Type</label>
+          <select
+            [(ngModel)]="formData.reportedAgainstType"
+            name="reportedAgainstType"
+            [disabled]="loading || !user"
+          >
+            <option value="">Select User Type</option>
+            <option *ngFor="let type of userTypes" [value]="type.value">
+              {{ type.label }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>User ID to Report Against</label>
+          <input
+            type="text"
+            [(ngModel)]="formData.reportedAgainstId"
+            name="reportedAgainstId"
+            placeholder="Optional"
+            [disabled]="loading || !user"
+          />
+        </div>
+
+      </div>
+
+      <!-- Subject -->
+      <div class="form-group">
+        <label>Subject *</label>
+        <input
+          type="text"
+          [(ngModel)]="formData.subject"
+          name="subject"
+          required
+          [disabled]="loading || !user"
+        />
+      </div>
+
+      <!-- Description -->
+      <div class="form-group">
+        <label>Description *</label>
+        <textarea
+          rows="5"
+          [(ngModel)]="formData.description"
+          name="description"
+          required
+          [disabled]="loading || !user"
+        ></textarea>
+      </div>
+
+      <!-- Message -->
+      <div *ngIf="message.text" class="form-message" [ngClass]="message.type">
+        {{ message.text }}
+      </div>
+
+      <!-- User Info -->
+      <div class="form-user-info">
+        <small>
+          <strong>Reporting as:</strong>
+          {{ userName }} (ID: {{ userId || 'N/A' }}, Type: {{ userType || 'N/A' }})
+        </small>
+      </div>
+
+      <!-- Actions -->
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" (click)="onClose()" [disabled]="loading">
+          Cancel
+        </button>
+
+        <button type="submit" class="btn-primary" [disabled]="loading || !user">
+          <span *ngIf="loading" class="spinner"></span>
+          {{ loading ? 'Submitting...' : 'Submit Report' }}
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
